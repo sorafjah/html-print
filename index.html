@@ -55,6 +55,8 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
 
         .tool-label {
@@ -68,6 +70,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         /* 入力フォームのデザイン */
@@ -95,7 +98,6 @@
             font-size: 14px;
             transition: all 0.2s;
             color: #333;
-            /* ボタンクリックでフォーカスを奪わないようにする */
             user-select: none;
         }
 
@@ -120,6 +122,11 @@
         }
         button.primary-btn:hover {
             background-color: #0052a3;
+        }
+
+        button.sm-btn {
+            padding: 4px 8px;
+            font-size: 12px;
         }
 
         /* メインエリア */
@@ -162,17 +169,21 @@
             box-shadow: none;
             min-height: 100vh;
         }
+        /* Webモード時は案内バナーを非表示 */
+        body.mode-web .instruction-banner {
+            display: none !important;
+        }
 
         /* 歯車アイコン（Webモードからの復帰） */
         .gear-btn {
             position: fixed;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.8);
+            bottom: 20px; /* 左下に配置 */
+            left: 20px;
+            background: rgba(255, 255, 255, 0.9);
             color: #555;
             font-size: 24px;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             display: none; /* 通常は非表示 */
             align-items: center;
@@ -180,12 +191,13 @@
             cursor: pointer;
             z-index: 100;
             border: 1px solid #ccc;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            transition: transform 0.3s, background 0.3s;
         }
         .gear-btn:hover {
             transform: rotate(90deg);
             background: #fff;
+            color: var(--primary-color);
         }
         body.mode-web .gear-btn {
             display: flex; /* Webモード時のみ表示 */
@@ -270,7 +282,14 @@
          * ドキュメント内部スタイル
          * =========================================
          */
-        [contenteditable]:focus { outline: 2px solid rgba(0, 102, 204, 0.2); }
+        [contenteditable]:focus { outline: none; } /* 全体の青枠は消す */
+        
+        /* 編集中の要素を目立たせる（フォーカス時のみ） */
+        #paper-container *:focus {
+            outline: 2px dashed rgba(0, 102, 204, 0.3);
+            background-color: rgba(0, 102, 204, 0.02);
+        }
+
         body.hide-ruby rt { display: none; }
         .font-mincho { font-family: "BIZ UDMincho", serif !important; }
         .font-gothic { font-family: "BIZ UDPGothic", sans-serif !important; }
@@ -289,7 +308,8 @@
         canvas { display: block; margin-bottom: 5px; border: 1px solid #eee; background: white; }
         .options { list-style: none; padding: 0; }
         .options li { margin-bottom: 8px; }
-        rt { user-select: none; }
+        /* ルビを編集可能にするため user-select: none を削除 */
+        rt { color: #555; }
     </style>
 </head>
 <body class="font-gothic">
@@ -310,13 +330,11 @@
         <div class="tool-group">
             <div class="tool-label">文字の設定</div>
             <div class="control-row">
-                <!-- onmousedownでpreventDefaultすることでフォーカス移動を防ぐ -->
                 <button onmousedown="event.preventDefault(); toggleFont('gothic')" id="btn-gothic" class="active">ゴシック</button>
                 <button onmousedown="event.preventDefault(); toggleFont('mincho')" id="btn-mincho">明朝体</button>
             </div>
             <div class="control-row" style="margin-top:5px;">
                 <button onmousedown="event.preventDefault(); execCmd('bold')" title="太字"><b>B</b></button>
-                <!-- 数字と△▽の入力欄 -->
                 <input type="number" id="fontSizeInput" value="16" min="8" max="72" title="文字サイズ">
                 <span style="font-size:12px;">px</span>
             </div>
@@ -326,11 +344,34 @@
         <div class="tool-group">
             <div class="tool-label">振り仮名（ルビ）</div>
             <button onmousedown="event.preventDefault(); toggleRuby()" id="btn-ruby" class="active">表示中</button>
+            <div style="font-size:10px; color:#666; margin-top:5px;">※小さい文字をクリックして編集できます</div>
         </div>
 
-        <!-- 枠線設定 -->
+        <!-- 選択行のデザイン（新機能） -->
+        <div class="tool-group" style="background-color: #f0f7ff; padding: 10px; border-radius: 4px; border: 1px solid #cce3ff;">
+            <div class="tool-label" style="color:#0052a3;">選択した行のデザイン</div>
+            <div style="font-size:10px; margin-bottom:5px;">※クリックした箇所の枠線を変更</div>
+            
+            <div class="control-row" style="margin-bottom:8px;">
+                <span style="font-size:12px; width:30px;">下線:</span>
+                <input type="number" id="elemBorderBottomWidth" value="0" min="0" max="20" style="width: 40px;" onchange="updateElementBorder()">
+                <span style="font-size:12px;">px</span>
+                <button class="sm-btn" onclick="setElementBorder(0)">なし</button>
+            </div>
+             <div class="control-row">
+                <span style="font-size:12px; width:30px;">種類:</span>
+                <select id="elemBorderStyle" onchange="updateElementBorder()" style="width: 90px;">
+                    <option value="solid">実線</option>
+                    <option value="dashed">破線</option>
+                    <option value="dotted">点線</option>
+                    <option value="double">二重線</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- 表全体の設定 -->
         <div class="tool-group">
-            <div class="tool-label">表の枠線</div>
+            <div class="tool-label">表全体の枠線</div>
             <div class="control-row">
                 <span style="font-size:12px;">太さ:</span>
                 <input type="number" id="borderWidth" value="1" min="0" max="10" onchange="updateTableBorder()">
@@ -349,14 +390,14 @@
         </div>
 
         <!-- 表示・印刷 -->
-        <div class="tool-group" style="margin-top: auto;">
+        <div class="tool-group" style="margin-top: auto; border:none;">
             <div class="tool-label">出力・表示</div>
             <button onclick="toggleWebMode()">🌐 Webサイトとして表示</button>
             <button onclick="window.print()" class="primary-btn">🖨 印刷する</button>
         </div>
     </div>
 
-    <!-- Webモード解除ボタン（歯車） -->
+    <!-- Webモード解除ボタン（歯車：左下） -->
     <div class="gear-btn" onclick="toggleWebMode()" title="編集モードに戻る">
         ⚙
     </div>
@@ -381,7 +422,7 @@
         <!-- 編集用紙 (A4) -->
         <div id="paper-container" contenteditable="true">
             
-            <!-- 使い方ガイド（印刷時非表示） -->
+            <!-- 使い方ガイド（印刷時・Webモード時 非表示） -->
             <div class="instruction-banner no-print" contenteditable="false">
                 <strong>【ここにHTMLを読み込む・編集する】</strong>
                 現在表示されているのはサンプルです。<br>
@@ -512,15 +553,18 @@
 
     const paper = document.getElementById('paper-container');
     let savedRange = null; // 選択範囲を保存する変数
+    let currentBlockElement = null; // 現在選択中のブロック要素
 
     // 選択範囲を保存する関数
     function saveSelection() {
         const selection = window.getSelection();
         if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
-            // 用紙内での選択のみ保存
             if (paper.contains(range.commonAncestorContainer)) {
                 savedRange = range;
+                
+                // カーソル位置の要素情報を取得してサイドバーに反映
+                updateCurrentElementInfo(range.commonAncestorContainer);
             }
         }
     }
@@ -534,36 +578,83 @@
         }
     }
 
-    // イベントリスナー：選択が変わるたびに保存
+    // カーソル位置の要素を解析してUIを更新
+    function updateCurrentElementInfo(node) {
+        // テキストノードなら親を取得
+        let el = (node.nodeType === 3) ? node.parentNode : node;
+        
+        // フォントサイズ反映
+        const size = window.getComputedStyle(el).fontSize;
+        if(size) document.getElementById('fontSizeInput').value = parseInt(size);
+
+        // ブロックレベル要素を探して下線設定を反映
+        // h1, div, p, th, td などを対象とする
+        while(el && el !== paper) {
+            const display = window.getComputedStyle(el).display;
+            const tagName = el.tagName.toLowerCase();
+            if(display === 'block' || tagName === 'th' || tagName === 'td' || tagName === 'h1' || tagName === 'div' || tagName === 'p') {
+                currentBlockElement = el;
+                // 下線の幅
+                const borderBottomWidth = window.getComputedStyle(el).borderBottomWidth;
+                document.getElementById('elemBorderBottomWidth').value = parseInt(borderBottomWidth) || 0;
+                
+                // 下線のスタイル
+                const borderBottomStyle = window.getComputedStyle(el).borderBottomStyle;
+                const styleSelect = document.getElementById('elemBorderStyle');
+                if(['solid', 'dashed', 'dotted', 'double'].includes(borderBottomStyle)) {
+                    styleSelect.value = borderBottomStyle;
+                } else {
+                    styleSelect.value = 'solid'; // デフォルト
+                }
+                break;
+            }
+            el = el.parentNode;
+        }
+    }
+
+    // 選択中の要素の下線を変更
+    function updateElementBorder() {
+        if(!currentBlockElement) return;
+        
+        const width = document.getElementById('elemBorderBottomWidth').value + 'px';
+        const style = document.getElementById('elemBorderStyle').value;
+        
+        currentBlockElement.style.borderBottomWidth = width;
+        currentBlockElement.style.borderBottomStyle = style;
+        // 色は黒固定（必要なら色選択も追加可能）
+        currentBlockElement.style.borderBottomColor = '#000';
+    }
+
+    function setElementBorder(widthVal) {
+        document.getElementById('elemBorderBottomWidth').value = widthVal;
+        updateElementBorder();
+    }
+
+
+    // イベントリスナー
     paper.addEventListener('keyup', saveSelection);
     paper.addEventListener('mouseup', saveSelection);
-    // フォーカスが外れた時も念のため保存（input操作前など）
     paper.addEventListener('blur', saveSelection);
 
     // フォント切り替え
     function toggleFont(type) {
-        // ボタン操作時でもフォーカスを戻す
         restoreSelection();
-        
         document.body.classList.remove('font-gothic', 'font-mincho');
         document.body.classList.add('font-' + type);
         
         document.getElementById('btn-gothic').classList.toggle('active', type === 'gothic');
         document.getElementById('btn-mincho').classList.toggle('active', type === 'mincho');
-        
-        paper.focus(); // 最後にフォーカスを戻す
+        paper.focus();
     }
 
     // ルビ表示切り替え
     function toggleRuby() {
         restoreSelection();
-        
         document.body.classList.toggle('hide-ruby');
         const isHidden = document.body.classList.contains('hide-ruby');
         const btn = document.getElementById('btn-ruby');
         btn.textContent = isHidden ? '非表示中' : '表示中';
         btn.classList.toggle('active', !isHidden);
-        
         paper.focus();
     }
 
@@ -572,33 +663,25 @@
         document.body.classList.toggle('mode-web');
     }
 
-    // 太字などのコマンド実行
+    // コマンド実行
     function execCmd(command) {
         restoreSelection();
         document.execCommand(command, false, null);
         paper.focus();
-        saveSelection(); // 変更後の状態を保存
+        saveSelection();
     }
 
-    // フォントサイズ変更（数値入力）
+    // フォントサイズ変更
     const fontSizeInput = document.getElementById('fontSizeInput');
-    
-    // 入力欄に触れた瞬間に選択範囲を復元＆再保存（フォーカスがinputに移るため）
-    fontSizeInput.addEventListener('focus', function() {
-        // 直前のselectionが有効なら維持したいが、
-        // inputにフォーカスしないと入力できないため、ここでは何もしない。
-        // 代わりにchangeイベントでrestoreする。
-    });
-
     fontSizeInput.addEventListener('change', function() {
-        restoreSelection(); // ここで復元してから適用
+        restoreSelection(); 
         const size = this.value + 'px';
         applyStyleToSelection('fontSize', size);
         paper.focus();
         saveSelection();
     });
 
-    // 選択範囲にスタイルを適用するヘルパー
+    // スタイル適用ヘルパー
     function applyStyleToSelection(styleName, styleValue) {
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
@@ -611,25 +694,10 @@
             range.surroundContents(span);
         } catch (e) {
             document.execCommand('styleWithCSS', false, true);
-            // 複雑な選択範囲の場合は簡易的にexecCommandを使う（ただしpx指定不可などの制限あり）
-            // ここでは簡易実装としてアラート等は出さず、失敗時は何もしない
         }
     }
     
-    // カーソル位置のフォントサイズを取得してinputに反映
-    paper.addEventListener('click', function() {
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const node = selection.anchorNode;
-            const element = node.nodeType === 3 ? node.parentElement : node; // テキストノードなら親要素
-            const size = window.getComputedStyle(element).fontSize;
-            if(size) {
-                fontSizeInput.value = parseInt(size);
-            }
-        }
-    });
-
-    // 表の枠線設定の更新
+    // 表の枠線設定（全体）
     function updateTableBorder() {
         const width = document.getElementById('borderWidth').value + 'px';
         const style = document.getElementById('borderStyle').value;
@@ -648,13 +716,12 @@
         `;
     }
 
-    // --- ソース編集モーダル関連 ---
+    // --- ソース編集モーダル ---
     const modal = document.getElementById('sourceModal');
     const sourceInput = document.getElementById('htmlSourceInput');
     const contentArea = document.getElementById('editable-content');
 
     function openSourceModal() {
-        // 現在の内容をテキストエリアに入れる
         sourceInput.value = contentArea.innerHTML.trim();
         modal.classList.add('open');
     }
@@ -664,16 +731,10 @@
     }
 
     function applySource() {
-        // テキストエリアの内容を用紙に反映
         contentArea.innerHTML = sourceInput.value;
         closeSourceModal();
-        
-        // 時計などのスクリプトがあれば再実行が必要だが、
-        // 単純なinnerHTML挿入ではscriptタグは実行されない。
-        // 時計が含まれているかチェックして再描画を試みる
         setTimeout(initClocks, 100);
     }
-
 
     /**
      * 時計描画ロジック
@@ -687,15 +748,12 @@
         const cy = radius;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // 外枠
         ctx.beginPath();
         ctx.arc(cx, cy, radius - 2, 0, 2 * Math.PI);
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // 目盛り
         for (let i = 0; i < 12; i++) {
             const angle = (i * 30) * Math.PI / 180;
             const x1 = cx + (radius - 10) * Math.sin(angle);
@@ -708,7 +766,6 @@
             ctx.stroke();
         }
 
-        // 短針
         const hourAngle = ((hour % 12) * 30 + (minute / 60) * 30) * Math.PI / 180;
         ctx.beginPath();
         ctx.moveTo(cx, cy);
@@ -718,7 +775,6 @@
         ctx.lineCap = 'round';
         ctx.stroke();
 
-        // 長針
         const minuteAngle = (minute * 6) * Math.PI / 180;
         ctx.beginPath();
         ctx.moveTo(cx, cy);
@@ -728,7 +784,6 @@
         ctx.lineCap = 'round';
         ctx.stroke();
 
-        // 中心点
         ctx.beginPath();
         ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
         ctx.fillStyle = '#000';
@@ -742,7 +797,6 @@
         drawClock('clockD', 14, 0);
     }
 
-    // 初期化実行
     window.onload = function() {
         initClocks();
         updateTableBorder();
