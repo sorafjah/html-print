@@ -3,803 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTMLプリントエディタ</title>
+    <title>実用的読解演習プリント</title>
     <style>
-        /* * =========================================
-         * アプリ全体のUIデザイン (App UI)
-         * =========================================
-         */
-        :root {
-            --primary-color: #0066cc;
-            --bg-color: #f4f7fa;
-            --text-color: #333;
-            --border-color: #dde2e5;
-            --paper-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
+        /* 基本レイアウト */
         body {
-            font-family: "BIZ UDPGothic", "BIZ UD Pゴシック", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-            background-color: var(--bg-color);
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.6;
+            color: #000;
+            background-color: #fff;
             margin: 0;
             padding: 0;
-            height: 100vh;
-            display: flex;
-            color: var(--text-color);
-            overflow: hidden;
         }
-
-        /* サイドバー */
-        .sidebar {
-            width: 280px;
-            background-color: #ffffff;
-            border-right: 1px solid var(--border-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.02);
-            z-index: 10;
-        }
-
-        .logo {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        .tool-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tool-label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-        .control-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        /* 入力フォームのデザイン */
-        input[type="number"] {
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-            width: 60px;
-        }
-
-        select {
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-        }
-
-        button {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-            color: #333;
-            user-select: none;
-        }
-
-        button:hover {
-            background-color: #f0f8ff;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        button.active {
-            background-color: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
-        }
-
-        button.primary-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            font-weight: bold;
-            padding: 10px;
-        }
-        button.primary-btn:hover {
-            background-color: #0052a3;
-        }
-
-        button.sm-btn {
-            padding: 4px 8px;
-            font-size: 12px;
-        }
-
-        /* メインエリア */
-        .main-area {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        /* 用紙 */
-        #paper-container {
-            background-color: #fff;
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            box-shadow: var(--paper-shadow);
-            box-sizing: border-box;
-            outline: none;
-            position: relative;
-        }
-
-        /* Web表示モード時のスタイル */
-        body.mode-web .sidebar {
-            display: none;
-        }
-        body.mode-web .main-area {
-            padding: 0;
-            background-color: #fff;
-            display: block;
-        }
-        body.mode-web #paper-container {
-            width: 100%;
-            max-width: 1000px;
+        .container {
+            width: 210mm; /* A4 width */
             margin: 0 auto;
-            box-shadow: none;
-            min-height: 100vh;
+            padding: 20mm;
+            box-sizing: border-box;
         }
-        /* Webモード時は案内バナーを非表示 */
-        body.mode-web .instruction-banner {
-            display: none !important;
-        }
-
-        /* 歯車アイコン（Webモードからの復帰） */
-        .gear-btn {
-            position: fixed;
-            bottom: 20px; /* 左下に配置 */
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #555;
+        h1 {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
             font-size: 24px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: none; /* 通常は非表示 */
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            border: 1px solid #ccc;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            transition: transform 0.3s, background 0.3s;
         }
-        .gear-btn:hover {
-            transform: rotate(90deg);
-            background: #fff;
-            color: var(--primary-color);
+        .situation {
+            margin-bottom: 20px;
+            border: 1px solid #000;
+            padding: 10px;
         }
-        body.mode-web .gear-btn {
-            display: flex; /* Webモード時のみ表示 */
+        
+        /* 表のデザイン */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
         }
 
-        /* 案内バナー（印刷時は非表示） */
-        .instruction-banner {
-            background-color: #e3f2fd;
-            border: 1px solid #90caf9;
-            color: #0d47a1;
-            padding: 15px;
-            border-radius: 4px;
+        /* 問題エリア */
+        .question {
             margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.5;
         }
-        .instruction-banner strong {
-            font-size: 16px;
-            display: block;
+        .question-title {
+            font-weight: bold;
             margin-bottom: 5px;
         }
-
-        /* ソース編集モーダル */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal-content {
-            background: #fff;
-            padding: 20px;
-            width: 80%;
-            max-width: 600px;
-            height: 70%;
-            display: flex;
-            flex-direction: column;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .modal-header { font-weight: bold; margin-bottom: 10px; font-size: 18px; }
-        #htmlSourceInput {
-            flex: 1;
-            font-family: monospace;
-            padding: 10px;
-            border: 1px solid #ccc;
-            resize: none;
-            margin-bottom: 10px;
+        .answer-line {
+            border-bottom: 1px solid #000;
+            display: inline-block;
+            width: 300px;
+            height: 24px;
+            vertical-align: bottom;
         }
 
-        /* * =========================================
-         * 印刷設定
-         * =========================================
-         */
+        /* 時計のグリッド */
+        .clock-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .clock-item {
+            text-align: center;
+        }
+        canvas {
+            border: 1px solid #eee;
+            max-width: 100%;
+        }
+
+        /* 印刷設定 */
         @media print {
-            .sidebar, .gear-btn, .no-print, .instruction-banner {
-                display: none !important;
-            }
-            body, .main-area {
-                background: none;
-                height: auto;
-                overflow: visible;
-                display: block;
-                padding: 0;
-                margin: 0;
-            }
-            #paper-container {
-                box-shadow: none;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                border: none !important;
-            }
-            body.hide-ruby rt { display: none; }
+            body { margin: 0; }
+            .container { width: 100%; padding: 10mm; }
+            .no-print { display: none; }
         }
-
-        /* * =========================================
-         * ドキュメント内部スタイル
-         * =========================================
-         */
-        [contenteditable]:focus { outline: none; } /* 全体の青枠は消す */
-        
-        /* 編集中の要素を目立たせる（フォーカス時のみ） */
-        #paper-container *:focus {
-            outline: 2px dashed rgba(0, 102, 204, 0.3);
-            background-color: rgba(0, 102, 204, 0.02);
-        }
-
-        body.hide-ruby rt { display: none; }
-        .font-mincho { font-family: "BIZ UDMincho", serif !important; }
-        .font-gothic { font-family: "BIZ UDPGothic", sans-serif !important; }
-
-        /* ユーザー提供スタイル */
-        .doc-title { text-align: center; font-size: 24px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .situation-box { background-color: #f9f9f9; padding: 15px; border: 1px solid #000; margin-bottom: 20px; }
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .doc-table th, .doc-table td { border: 1px solid #000; padding: 8px 12px; text-align: center; }
-        .doc-table th { background-color: #eee; }
-        .question-box { margin-bottom: 25px; }
-        .question-title { font-weight: bold; margin-bottom: 10px; }
-        .answer-space { border-bottom: 1px dotted #000; display: inline-block; min-width: 200px; height: 1.5em; vertical-align: bottom; }
-        .clock-grid { display: flex; justify-content: space-around; flex-wrap: wrap; margin-top: 15px; }
-        .clock-item { text-align: center; margin: 10px; }
-        canvas { display: block; margin-bottom: 5px; border: 1px solid #eee; background: white; }
-        .options { list-style: none; padding: 0; }
-        .options li { margin-bottom: 8px; }
-        /* ルビを編集可能にするため user-select: none を削除 */
-        rt { color: #555; }
     </style>
 </head>
-<body class="font-gothic">
+<body>
 
-    <!-- サイドバー -->
-    <div class="sidebar">
-        <div class="logo">プリントエディタ</div>
+<div class="container">
+    <h1><ruby>実用的<rt>じつようてき</rt></ruby><ruby>読解<rt>どっかい</rt></ruby>・<ruby>計算<rt>けいさん</rt></ruby>トレーニング</h1>
 
-        <!-- データ操作 -->
-        <div class="tool-group">
-            <div class="tool-label">データ入力</div>
-            <button onclick="openSourceModal()" title="HTMLタグを直接貼り付けられます">
-                📄 HTMLソースを貼付/編集
-            </button>
-        </div>
-
-        <!-- フォント設定 -->
-        <div class="tool-group">
-            <div class="tool-label">文字の設定</div>
-            <div class="control-row">
-                <button onmousedown="event.preventDefault(); toggleFont('gothic')" id="btn-gothic" class="active">ゴシック</button>
-                <button onmousedown="event.preventDefault(); toggleFont('mincho')" id="btn-mincho">明朝体</button>
-            </div>
-            <div class="control-row" style="margin-top:5px;">
-                <button onmousedown="event.preventDefault(); execCmd('bold')" title="太字"><b>B</b></button>
-                <input type="number" id="fontSizeInput" value="16" min="8" max="72" title="文字サイズ">
-                <span style="font-size:12px;">px</span>
-            </div>
-        </div>
-
-        <!-- ルビ設定 -->
-        <div class="tool-group">
-            <div class="tool-label">振り仮名（ルビ）</div>
-            <button onmousedown="event.preventDefault(); toggleRuby()" id="btn-ruby" class="active">表示中</button>
-            <div style="font-size:10px; color:#666; margin-top:5px;">※小さい文字をクリックして編集できます</div>
-        </div>
-
-        <!-- 選択行のデザイン（新機能） -->
-        <div class="tool-group" style="background-color: #f0f7ff; padding: 10px; border-radius: 4px; border: 1px solid #cce3ff;">
-            <div class="tool-label" style="color:#0052a3;">選択した行のデザイン</div>
-            <div style="font-size:10px; margin-bottom:5px;">※クリックした箇所の枠線を変更</div>
-            
-            <div class="control-row" style="margin-bottom:8px;">
-                <span style="font-size:12px; width:30px;">下線:</span>
-                <input type="number" id="elemBorderBottomWidth" value="0" min="0" max="20" style="width: 40px;" onchange="updateElementBorder()">
-                <span style="font-size:12px;">px</span>
-                <button class="sm-btn" onclick="setElementBorder(0)">なし</button>
-            </div>
-             <div class="control-row">
-                <span style="font-size:12px; width:30px;">種類:</span>
-                <select id="elemBorderStyle" onchange="updateElementBorder()" style="width: 90px;">
-                    <option value="solid">実線</option>
-                    <option value="dashed">破線</option>
-                    <option value="dotted">点線</option>
-                    <option value="double">二重線</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- 表全体の設定 -->
-        <div class="tool-group">
-            <div class="tool-label">表全体の枠線</div>
-            <div class="control-row">
-                <span style="font-size:12px;">太さ:</span>
-                <input type="number" id="borderWidth" value="1" min="0" max="10" onchange="updateTableBorder()">
-                <span style="font-size:12px;">px</span>
-            </div>
-            <div class="control-row">
-                <span style="font-size:12px;">種類:</span>
-                <select id="borderStyle" onchange="updateTableBorder()" style="width: 100px;">
-                    <option value="solid">実線</option>
-                    <option value="dashed">破線</option>
-                    <option value="dotted">点線</option>
-                    <option value="double">二重線</option>
-                    <option value="none">なし</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- 表示・印刷 -->
-        <div class="tool-group" style="margin-top: auto; border:none;">
-            <div class="tool-label">出力・表示</div>
-            <button onclick="toggleWebMode()">🌐 Webサイトとして表示</button>
-            <button onclick="window.print()" class="primary-btn">🖨 印刷する</button>
-        </div>
+    <div class="situation">
+        <strong>【<ruby>場面<rt>ばめん</rt></ruby>】</strong><br>
+        <ruby>中学<rt>ちゅうがく</rt></ruby>2<ruby>年生<rt>ねんせい</rt></ruby>の<ruby>佐藤<rt>さとう</rt></ruby>さんは、<ruby>来週<rt>らいしゅう</rt></ruby>の<ruby>火曜日<rt>かようび</rt></ruby>に「<ruby>市立<rt>しりつ</rt></ruby><ruby>図書館<rt>としょかん</rt></ruby>」で<ruby>職場<rt>しょくば</rt></ruby><ruby>体験<rt>たいけん</rt></ruby>をします。
+        <ruby>下<rt>した</rt></ruby>の<ruby>表<rt>ひょう</rt></ruby>は、その<ruby>日<rt>ひ</rt></ruby>のスケジュールです。これを<ruby>見<rt>み</rt></ruby>て、<ruby>後<rt>あと</rt></ruby>の<ruby>問<rt>と</rt></ruby>いに<ruby>答<rt>こた</rt></ruby>えなさい。
     </div>
 
-    <!-- Webモード解除ボタン（歯車：左下） -->
-    <div class="gear-btn" onclick="toggleWebMode()" title="編集モードに戻る">
-        ⚙
+    <table>
+        <thead>
+            <tr>
+                <th><ruby>時刻<rt>じこく</rt></ruby></th>
+                <th><ruby>行<rt>い</rt></ruby>く<ruby>場所<rt>ばしょ</rt></ruby>・すること</th>
+                <th><ruby>交通手段<rt>こうつうしゅだん</rt></ruby>や<ruby>注意点<rt>ちゅういてん</rt></ruby></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>08:45</td>
+                <td><ruby>図書館<rt>としょかん</rt></ruby> <ruby>正面入口<rt>しょうめんいりぐち</rt></ruby>に<ruby>集合<rt>しゅうごう</rt></ruby></td>
+                <td>『<ruby>徒歩<rt>とほ</rt></ruby>』 ※<ruby>名札<rt>なふだ</rt></ruby>を<ruby>忘<rt>わす</rt></ruby>れないこと</td>
+            </tr>
+            <tr>
+                <td>09:00 〜 10:30</td>
+                <td><ruby>開館<rt>かいかん</rt></ruby><ruby>準備<rt>じゅんび</rt></ruby>・<ruby>返却<rt>へんきゃく</rt></ruby>ポストの<ruby>回収<rt>かいしゅう</rt></ruby></td>
+                <td>『<ruby>館内<rt>かんない</rt></ruby><ruby>移動<rt>いどう</rt></ruby>』 ※<ruby>動<rt>うご</rt></ruby>きやすい<ruby>靴<rt>くつ</rt></ruby>を<ruby>履<rt>は</rt></ruby>く</td>
+            </tr>
+            <tr>
+                <td>10:30 〜 12:00</td>
+                <td><ruby>児童<rt>じどう</rt></ruby>コーナーでの<ruby>絵本<rt>えほん</rt></ruby>の<ruby>整理<rt>せいり</rt></ruby></td>
+                <td>※<ruby>小<rt>ちい</rt></ruby>さな<ruby>子供<rt>こども</rt></ruby>に<ruby>挨拶<rt>あいさつ</rt></ruby>をする</td>
+            </tr>
+            <tr>
+                <td>12:00 〜 13:00</td>
+                <td><ruby>会議室<rt>かいぎしつ</rt></ruby>にて<ruby>昼食<rt>ちゅうしょく</rt></ruby>・<ruby>休憩<rt>きゅうけい</rt></ruby></td>
+                <td>※<ruby>持参<rt>じさん</rt></ruby>した<ruby>弁当<rt>べんとう</rt></ruby>を<ruby>食<rt>た</rt></ruby>べる</td>
+            </tr>
+            <tr>
+                <td>13:00 〜 15:30</td>
+                <td><ruby>新着<rt>しんちゃく</rt></ruby><ruby>図書<rt>としょ</rt></ruby>のラベル<ruby>貼<rt>は</rt></ruby>り・<ruby>検収<rt>けんしゅう</rt></ruby></td>
+                <td>※<ruby>座<rt>すわ</rt></ruby>り<ruby>仕事<rt>しごと</rt></ruby>（<ruby>丁寧<rt>ていねい</rt></ruby>に<ruby>作業<rt>さぎょう</rt></ruby>すること）</td>
+            </tr>
+            <tr>
+                <td>15:30 〜 16:00</td>
+                <td><ruby>掃除<rt>そうじ</rt></ruby>・<ruby>日誌<rt>にっし</rt></ruby><ruby>記入<rt>きにゅう</rt></ruby>・<ruby>解散<rt>かいさん</rt></ruby></td>
+                <td>『<ruby>徒歩<rt>とほ</rt></ruby>』 ※<ruby>筆記用具<rt>ひっきようぐ</rt></ruby>を<ruby>持参<rt>じさん</rt></ruby>すること</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="question">
+        <p class="question-title">【<ruby>問<rt>とい</rt></ruby>1】 <ruby>表<rt>ひょう</rt></ruby>の<ruby>内容<rt>ないよう</rt></ruby>から<ruby>答<rt>こた</rt></ruby>えなさい。</p>
+        （1）<ruby>朝<rt>あさ</rt></ruby>の<ruby>集合<rt>しゅうごう</rt></ruby><ruby>時<rt>じ</rt></ruby>に、<ruby>忘<rt>わす</rt></ruby>れてはいけない「<ruby>持<rt>も</rt></ruby>ち<ruby>物<rt>もの</rt></ruby>」はなんですか。<br>
+        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-line"></span><br>
+        （2）<ruby>昼食<rt>ちゅうしょく</rt></ruby>をとる「<ruby>場所<rt>ばしょ</rt></ruby>」はどこですか。<br>
+        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-line"></span>
     </div>
 
-    <!-- ソース編集モーダル -->
-    <div class="modal-overlay" id="sourceModal">
-        <div class="modal-content">
-            <div class="modal-header">HTMLソースの編集</div>
-            <div style="font-size:12px; color:#666; margin-bottom:5px;">
-                ここに元のHTMLコードを貼り付けて「反映する」を押してください。
+    <div class="question">
+        <p class="question-title">【<ruby>問<rt>とい</rt></ruby>2】 <ruby>時間<rt>じかん</rt></ruby>の<ruby>計算<rt>けいさん</rt></ruby>をしなさい。</p>
+        「<ruby>新着<rt>しんちゃく</rt></ruby><ruby>図書<rt>としょ</rt></ruby>のラベル<ruby>貼<rt>は</rt></ruby>り・<ruby>検収<rt>けんしゅう</rt></ruby>」の<ruby>活動<rt>かつどう</rt></ruby>は、<ruby>全部<rt>ぜんぶ</rt></ruby>で<ruby>何時間<rt>なんじかん</rt></ruby><ruby>何分間<rt>なんぷんかん</rt></ruby>ありますか。<br>
+        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-line"></span>
+    </div>
+
+    <div class="question">
+        <p class="question-title">【<ruby>問<rt>とい</rt></ruby>3】 <ruby>時計<rt>とけい</rt></ruby>の<ruby>読<rt>よ</rt></ruby>み<ruby>取<rt>と</rt></ruby>り。</p>
+        <ruby>佐藤<rt>さとう</rt></ruby>さんが「<ruby>絵本<rt>えほん</rt></ruby>の<ruby>整理<rt>せいり</rt></ruby>」を<ruby>終<rt>お</rt></ruby>えて、<ruby>昼食<rt>ちゅうしょく</rt></ruby>を<ruby>始<rt>はじ</rt></ruby>める<ruby>時刻<rt>じこく</rt></ruby>（12:00）を<ruby>指<rt>さ</rt></ruby>している<ruby>時計<rt>とけい</rt></ruby>を、ア〜エから1つ<ruby>選<rt>えら</rt></ruby>びなさい。
+        <div class="clock-grid">
+            <div class="clock-item">
+                <canvas id="clockA" width="120" height="120"></canvas>
+                <div>ア</div>
             </div>
-            <textarea id="htmlSourceInput" placeholder="<html>...</html>"></textarea>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="closeSourceModal()">キャンセル</button>
-                <button onclick="applySource()" class="primary-btn">反映する</button>
+            <div class="clock-item">
+                <canvas id="clockB" width="120" height="120"></canvas>
+                <div>イ</div>
+            </div>
+            <div class="clock-item">
+                <canvas id="clockC" width="120" height="120"></canvas>
+                <div>ウ</div>
+            </div>
+            <div class="clock-item">
+                <canvas id="clockD" width="120" height="120"></canvas>
+                <div>エ</div>
             </div>
         </div>
+        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-line" style="width: 50px;"></span>
     </div>
 
-    <!-- メインエリア -->
-    <div class="main-area">
-        <!-- 編集用紙 (A4) -->
-        <div id="paper-container" contenteditable="true">
-            
-            <!-- 使い方ガイド（印刷時・Webモード時 非表示） -->
-            <div class="instruction-banner no-print" contenteditable="false">
-                <strong>【ここにHTMLを読み込む・編集する】</strong>
-                現在表示されているのはサンプルです。<br>
-                ・文章や表の中身は、この画面で直接クリックして書き換えられます。<br>
-                ・お手持ちのHTMLがある場合は、左側の<strong>「HTMLソースを貼付」</strong>ボタンを使うか、ブラウザでコピーした内容をここに直接貼り付けてください。
-            </div>
-
-            <!-- ▼▼▼ コンテンツ開始 ▼▼▼ -->
-            <div id="editable-content">
-                <h1 class="doc-title"><ruby>実<rt>じつ</rt></ruby><ruby>用<rt>よう</rt></ruby><ruby>的<rt>てき</rt></ruby><ruby>読<rt>ど</rt></ruby><ruby>解<rt>かい</rt></ruby>・<ruby>計<rt>けい</rt></ruby><ruby>算<rt>さん</rt></ruby>プリント：<ruby>修<rt>しゅう</rt></ruby><ruby>学<rt>がく</rt></ruby><ruby>旅<rt>りょ</rt></ruby><ruby>行<rt>こう</rt></ruby>の<ruby>計<rt>けい</rt></ruby><ruby>画<rt>かく</rt></ruby></h1>
-
-                <div class="situation-box">
-                    <strong>【シチュエーション】</strong><br>
-                    あなたは<ruby>来<rt>らい</rt></ruby><ruby>週<rt>しゅう</rt></ruby>、<ruby>京<rt>きょう</rt></ruby><ruby>都<rt>と</rt></ruby>へ<ruby>修<rt>しゅう</rt></ruby><ruby>学<rt>がく</rt></ruby><ruby>旅<rt>りょ</rt></ruby><ruby>行<rt>こう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。これは、あなたの<ruby>班<rt>はん</rt></ruby>が<ruby>作成<rt>さくせい</rt></ruby>した２<ruby>日<rt>にち</rt></ruby><ruby>目<rt>め</rt></ruby>の<ruby>班<rt>はん</rt></ruby><ruby>別<rt>べつ</rt></ruby><ruby>活<rt>かつ</rt></ruby><ruby>動<rt>どう</rt></ruby>のスケジュール<ruby>表<rt>ひょう</rt></ruby>です。この<ruby>表<rt>ひょう</rt></ruby>をよく<ruby>読<rt>よ</rt></ruby>んで、あとの<ruby>問<rt>と</rt></ruby>いに<ruby>答<rt>こた</rt></ruby>えなさい。
-                </div>
-
-                <table class="doc-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;"><ruby>時刻<rt>じこく</rt></ruby></th>
-                            <th style="width: 40%;"><ruby>行<rt>い</rt></ruby>く<ruby>場所<rt>ばしょ</rt></ruby>・すること</th>
-                            <th><ruby>交通<rt>こうつう</rt></ruby><ruby>手段<rt>しゅだん</rt></ruby>や<ruby>注意点<rt>ちゅういてん</rt></ruby></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>8:30</td>
-                            <td><ruby>宿<rt>しゅく</rt></ruby><ruby>泊<rt>はく</rt></ruby>ホテル<ruby>出発<rt>しゅっぱつ</rt></ruby></td>
-                            <td>※<ruby>地図<rt>ちず</rt></ruby>とカメラを<ruby>忘<rt>わす</rt></ruby>れない</td>
-                        </tr>
-                        <tr>
-                            <td>9:10</td>
-                            <td><ruby>金<rt>きん</rt></ruby><ruby>閣<rt>かく</rt></ruby><ruby>寺<rt>じ</rt></ruby>（<ruby>鹿<rt>ろく</rt></ruby><ruby>苑<rt>おん</rt></ruby><ruby>寺<rt>じ</rt></ruby>）</td>
-                            <td>『<ruby>市<rt>し</rt></ruby>バス』を<ruby>利用<rt>りよう</rt></ruby></td>
-                        </tr>
-                        <tr>
-                            <td>11:00</td>
-                            <td><ruby>嵐<rt>あらし</rt></ruby><ruby>山<rt>やま</rt></ruby>・<ruby>渡<rt>わた</rt></ruby><ruby>月<rt>げつ</rt></ruby><ruby>橋<rt>きょう</rt></ruby></td>
-                            <td>『<ruby>京<rt>けい</rt></ruby><ruby>福<rt>ふく</rt></ruby><ruby>電<rt>でん</rt></ruby><ruby>鉄<rt>てつ</rt></ruby>（<ruby>嵐<rt>らん</rt></ruby><ruby>電<rt>でん</rt></ruby>）』</td>
-                        </tr>
-                        <tr>
-                            <td>12:30</td>
-                            <td><ruby>昼食<rt>ちゅうしょく</rt></ruby>（お<ruby>店<rt>みせ</rt></ruby>：みやこ）</td>
-                            <td>※12:30に<ruby>予約<rt>よやく</rt></ruby>ずみ</td>
-                        </tr>
-                        <tr>
-                            <td>14:30</td>
-                            <td><ruby>清<rt>きよ</rt></ruby><ruby>水<rt>みず</rt></ruby><ruby>寺<rt>でら</rt></ruby></td>
-                            <td>『タクシー』を<ruby>利用<rt>りよう</rt></ruby></td>
-                        </tr>
-                        <tr>
-                            <td>17:00</td>
-                            <td><ruby>宿<rt>しゅく</rt></ruby><ruby>泊<rt>はく</rt></ruby>ホテル<ruby>帰着<rt>きちゃく</rt></ruby></td>
-                            <td>※<ruby>夕<rt>ゆう</rt></ruby><ruby>食<rt>しょく</rt></ruby>は18:00から</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>1】 <ruby>宿<rt>しゅく</rt></ruby><ruby>泊<rt>はく</rt></ruby>ホテルを<ruby>出発<rt>しゅっぱつ</rt></ruby>するときに、<ruby>必<rt>かなら</rt></ruby>ず<ruby>持<rt>も</rt></ruby>っていくように<ruby>書<rt>か</rt></ruby>かれている「<ruby>持<rt>も</rt></ruby>ち<ruby>物<rt>もの</rt></ruby>」を２つ<ruby>答<rt>こた</rt></ruby>えなさい。
-                    </div>
-                    <div>
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space"></span>
-                    </div>
-                </div>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>2】 <ruby>嵐<rt>あらし</rt></ruby><ruby>山<rt>やま</rt></ruby>に<ruby>到着<rt>とうちゃく</rt></ruby>してから、<ruby>昼食<rt>ちゅうしょく</rt></ruby>のお<ruby>店<rt>みせ</rt></ruby>に<ruby>行<rt>い</rt></ruby>くまでの「<ruby>自由<rt>じゆう</rt></ruby><ruby>時間<rt>じかん</rt></ruby>」は、<ruby>何<rt>なん</rt></ruby><ruby>分<rt>ぷん</rt></ruby><ruby>間<rt>かん</rt></ruby>ありますか。
-                    </div>
-                    <div>
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space"></span><ruby>分<rt>ぷん</rt></ruby><ruby>間<rt>かん</rt></ruby>
-                    </div>
-                </div>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>3】 <ruby>最後<rt>さいご</rt></ruby>の<ruby>見学<rt>けんがく</rt></ruby><ruby>場所<rt>ばしょ</rt></ruby>である「<ruby>清<rt>きよ</rt></ruby><ruby>水<rt>みず</rt></ruby><ruby>寺<rt>でら</rt></ruby>」に<ruby>到着<rt>とうちゃく</rt></ruby>する<ruby>予定<rt>よてい</rt></ruby><ruby>時刻<rt>じこく</rt></ruby>を<ruby>表<rt>あらわ</rt></ruby>している<ruby>時計<rt>とけい</rt></ruby>を、<ruby>次<rt>つぎ</rt></ruby>のア～エから１つ<ruby>選<rt>えら</rt></ruby>んで、<ruby>記号<rt>きごう</rt></ruby>で<ruby>答<rt>こた</rt></ruby>えなさい。
-                    </div>
-                    <div class="clock-grid">
-                        <div class="clock-item">
-                            <canvas id="clockA" width="100" height="100"></canvas>
-                            ア
-                        </div>
-                        <div class="clock-item">
-                            <canvas id="clockB" width="100" height="100"></canvas>
-                            イ
-                        </div>
-                        <div class="clock-item">
-                            <canvas id="clockC" width="100" height="100"></canvas>
-                            ウ
-                        </div>
-                        <div class="clock-item">
-                            <canvas id="clockD" width="100" height="100"></canvas>
-                            エ
-                        </div>
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space" style="min-width: 50px;"></span>
-                    </div>
-                </div>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>4】 <ruby>計画<rt>けいかく</rt></ruby><ruby>中<rt>ちゅう</rt></ruby>に「<ruby>市<rt>し</rt></ruby>バス」を<ruby>利用<rt>りよう</rt></ruby>する<ruby>場面<rt>ばめん</rt></ruby>がありますが、バスの<ruby>中<rt>なか</rt></ruby>での<ruby>行動<rt>こうどう</rt></ruby>として「もっともふさわしいもの」を１つ<ruby>選<rt>えら</rt></ruby>びなさい。
-                    </div>
-                    <ul class="options">
-                        <li>ア：<ruby>次<rt>つぎ</rt></ruby>の<ruby>目的地<rt>もくてきち</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>するため、<ruby>大<rt>おお</rt></ruby>きな<ruby>声<rt>こえ</rt></ruby>で<ruby>相談<rt>そうだん</rt></ruby>する。</li>
-                        <li>イ：お<ruby>腹<rt>なか</rt></ruby>がすいたので、<ruby>友達<rt>ともだち</rt></ruby>とお<ruby>菓子<rt>かし</rt></ruby>を<ruby>分<rt>わ</rt></ruby>け<ruby>合<rt>あ</rt></ruby>って<ruby>食<rt>た</rt></ruby>べる。</li>
-                        <li>ウ：リュックサックを<ruby>背負<rt>せお</rt></ruby>ったままだと<ruby>他<rt>ほか</rt></ruby>の<ruby>客<rt>きゃく</rt></ruby>の<ruby>邪魔<rt>じゃま</rt></ruby>になるので、<ruby>前<rt>まえ</rt></ruby>に<ruby>抱<rt>かか</rt></ruby>えたり<ruby>網棚<rt>あみだな</rt></ruby>に<ruby>置<rt>お</rt></ruby>いたりする。</li>
-                        <li>エ：<ruby>降<rt>お</rt></ruby>りる<ruby>停留所<rt>ていりゅうじょ</rt></ruby>に<ruby>着<rt>つ</rt></ruby>く<ruby>前<rt>まえ</rt></ruby>に、<ruby>急<rt>いそ</rt></ruby>いでバスの<ruby>出口<rt>でぐち</rt></ruby>まで<ruby>走<rt>はし</rt></ruby>って<ruby>移動<rt>いどう</rt></ruby>する。</li>
-                    </ul>
-                    <div>
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space" style="min-width: 50px;"></span>
-                    </div>
-                </div>
-            </div>
-            <!-- ▲▲▲ コンテンツ終了 ▲▲▲ -->
-
-        </div>
+    <div class="question">
+        <p class="question-title">【<ruby>問<rt>とい</rt></ruby>4】 <ruby>職場<rt>しょくば</rt></ruby>でのマナー。</p>
+        <ruby>職場<rt>しょくば</rt></ruby><ruby>体験<rt>たいけん</rt></ruby><ruby>中<rt>ちゅう</rt></ruby>、<ruby>図書館<rt>としょかん</rt></ruby>の<ruby>中<rt>なか</rt></ruby>で<ruby>注意<rt>ちゅうい</rt></ruby>すべきこととして、もっとも<ruby>適切<rt>てきせつ</rt></ruby>なものはどれですか。<br>
+        ア：<ruby>大<rt>おお</rt></ruby>きな<ruby>声<rt>こえ</rt></ruby>で<ruby>友達<rt>ともだち</rt></ruby>と<ruby>相談<rt>そうだん</rt></ruby>しながら<ruby>作業<rt>さぎょう</rt></ruby>をする。<br>
+        イ：<ruby>利用者<rt>りようしゃ</rt></ruby>に<ruby>迷惑<rt>めいわく</rt></ruby>がかからないよう、<ruby>静<rt>しず</rt></ruby>かに<ruby>行動<rt>こうどう</rt></ruby>する。<br>
+        ウ：<ruby>疲<rt>つか</rt></ruby>れたら、<ruby>誰<rt>だれ</rt></ruby>にも<ruby>言<rt>い</rt></ruby>わずに<ruby>椅子<rt>いす</rt></ruby>に<ruby>座<rt>すわ</rt></ruby>って<ruby>休<rt>やす</rt></ruby>む。<br>
+        エ：<ruby>本<rt>ほん</rt></ruby>のラベル<ruby>貼<rt>は</rt></ruby>りは、<ruby>自分<rt>じぶん</rt></ruby>の<ruby>好<rt>す</rt></ruby>きな<ruby>場所<rt>ばしょ</rt></ruby>に<ruby>自由<rt>じゆう</rt></ruby>に<ruby>貼<rt>は</rt></ruby>る。<br>
+        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-line" style="width: 50px;"></span>
     </div>
+
+    <div class="no-print" style="text-align:center; margin-top:30px;">
+        <button onclick="window.print()">このプリントを<ruby>印刷<rt>いんさつ</rt></ruby>する</button>
+    </div>
+</div>
 
 <script>
-    /**
-     * アプリケーションロジック
-     */
-
-    const paper = document.getElementById('paper-container');
-    let savedRange = null; // 選択範囲を保存する変数
-    let currentBlockElement = null; // 現在選択中のブロック要素
-
-    // 選択範囲を保存する関数
-    function saveSelection() {
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            if (paper.contains(range.commonAncestorContainer)) {
-                savedRange = range;
-                
-                // カーソル位置の要素情報を取得してサイドバーに反映
-                updateCurrentElementInfo(range.commonAncestorContainer);
-            }
-        }
-    }
-
-    // 選択範囲を復元する関数
-    function restoreSelection() {
-        if (savedRange) {
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(savedRange);
-        }
-    }
-
-    // カーソル位置の要素を解析してUIを更新
-    function updateCurrentElementInfo(node) {
-        // テキストノードなら親を取得
-        let el = (node.nodeType === 3) ? node.parentNode : node;
-        
-        // フォントサイズ反映
-        const size = window.getComputedStyle(el).fontSize;
-        if(size) document.getElementById('fontSizeInput').value = parseInt(size);
-
-        // ブロックレベル要素を探して下線設定を反映
-        // h1, div, p, th, td などを対象とする
-        while(el && el !== paper) {
-            const display = window.getComputedStyle(el).display;
-            const tagName = el.tagName.toLowerCase();
-            if(display === 'block' || tagName === 'th' || tagName === 'td' || tagName === 'h1' || tagName === 'div' || tagName === 'p') {
-                currentBlockElement = el;
-                // 下線の幅
-                const borderBottomWidth = window.getComputedStyle(el).borderBottomWidth;
-                document.getElementById('elemBorderBottomWidth').value = parseInt(borderBottomWidth) || 0;
-                
-                // 下線のスタイル
-                const borderBottomStyle = window.getComputedStyle(el).borderBottomStyle;
-                const styleSelect = document.getElementById('elemBorderStyle');
-                if(['solid', 'dashed', 'dotted', 'double'].includes(borderBottomStyle)) {
-                    styleSelect.value = borderBottomStyle;
-                } else {
-                    styleSelect.value = 'solid'; // デフォルト
-                }
-                break;
-            }
-            el = el.parentNode;
-        }
-    }
-
-    // 選択中の要素の下線を変更
-    function updateElementBorder() {
-        if(!currentBlockElement) return;
-        
-        const width = document.getElementById('elemBorderBottomWidth').value + 'px';
-        const style = document.getElementById('elemBorderStyle').value;
-        
-        currentBlockElement.style.borderBottomWidth = width;
-        currentBlockElement.style.borderBottomStyle = style;
-        // 色は黒固定（必要なら色選択も追加可能）
-        currentBlockElement.style.borderBottomColor = '#000';
-    }
-
-    function setElementBorder(widthVal) {
-        document.getElementById('elemBorderBottomWidth').value = widthVal;
-        updateElementBorder();
-    }
-
-
-    // イベントリスナー
-    paper.addEventListener('keyup', saveSelection);
-    paper.addEventListener('mouseup', saveSelection);
-    paper.addEventListener('blur', saveSelection);
-
-    // フォント切り替え
-    function toggleFont(type) {
-        restoreSelection();
-        document.body.classList.remove('font-gothic', 'font-mincho');
-        document.body.classList.add('font-' + type);
-        
-        document.getElementById('btn-gothic').classList.toggle('active', type === 'gothic');
-        document.getElementById('btn-mincho').classList.toggle('active', type === 'mincho');
-        paper.focus();
-    }
-
-    // ルビ表示切り替え
-    function toggleRuby() {
-        restoreSelection();
-        document.body.classList.toggle('hide-ruby');
-        const isHidden = document.body.classList.contains('hide-ruby');
-        const btn = document.getElementById('btn-ruby');
-        btn.textContent = isHidden ? '非表示中' : '表示中';
-        btn.classList.toggle('active', !isHidden);
-        paper.focus();
-    }
-
-    // Webモード切り替え
-    function toggleWebMode() {
-        document.body.classList.toggle('mode-web');
-    }
-
-    // コマンド実行
-    function execCmd(command) {
-        restoreSelection();
-        document.execCommand(command, false, null);
-        paper.focus();
-        saveSelection();
-    }
-
-    // フォントサイズ変更
-    const fontSizeInput = document.getElementById('fontSizeInput');
-    fontSizeInput.addEventListener('change', function() {
-        restoreSelection(); 
-        const size = this.value + 'px';
-        applyStyleToSelection('fontSize', size);
-        paper.focus();
-        saveSelection();
-    });
-
-    // スタイル適用ヘルパー
-    function applyStyleToSelection(styleName, styleValue) {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-
-        const range = selection.getRangeAt(0);
-        const span = document.createElement("span");
-        span.style[styleName] = styleValue;
-        
-        try {
-            range.surroundContents(span);
-        } catch (e) {
-            document.execCommand('styleWithCSS', false, true);
-        }
-    }
-    
-    // 表の枠線設定（全体）
-    function updateTableBorder() {
-        const width = document.getElementById('borderWidth').value + 'px';
-        const style = document.getElementById('borderStyle').value;
-        
-        let styleTag = document.getElementById('dynamic-table-style');
-        if (!styleTag) {
-            styleTag = document.createElement('style');
-            styleTag.id = 'dynamic-table-style';
-            document.head.appendChild(styleTag);
-        }
-
-        styleTag.innerHTML = `
-            .doc-table th, .doc-table td {
-                border: ${width} ${style} #000 !important;
-            }
-        `;
-    }
-
-    // --- ソース編集モーダル ---
-    const modal = document.getElementById('sourceModal');
-    const sourceInput = document.getElementById('htmlSourceInput');
-    const contentArea = document.getElementById('editable-content');
-
-    function openSourceModal() {
-        sourceInput.value = contentArea.innerHTML.trim();
-        modal.classList.add('open');
-    }
-
-    function closeSourceModal() {
-        modal.classList.remove('open');
-    }
-
-    function applySource() {
-        contentArea.innerHTML = sourceInput.value;
-        closeSourceModal();
-        setTimeout(initClocks, 100);
-    }
-
-    /**
-     * 時計描画ロジック
-     */
     function drawClock(canvasId, hour, minute) {
         const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
         const ctx = canvas.getContext('2d');
         const radius = canvas.width / 2;
-        const cx = radius;
-        const cy = radius;
+        const centerX = radius;
+        const centerY = radius;
+        const clockRadius = radius - 5;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 外枠
         ctx.beginPath();
-        ctx.arc(cx, cy, radius - 2, 0, 2 * Math.PI);
+        ctx.arc(centerX, centerY, clockRadius, 0, 2 * Math.PI);
         ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1;
         ctx.stroke();
 
-        for (let i = 0; i < 12; i++) {
-            const angle = (i * 30) * Math.PI / 180;
-            const x1 = cx + (radius - 10) * Math.sin(angle);
-            const y1 = cy - (radius - 10) * Math.cos(angle);
-            const x2 = cx + (radius - 2) * Math.sin(angle);
-            const y2 = cy - (radius - 2) * Math.cos(angle);
+        // メモリ（1分きざみ）
+        for (let i = 0; i < 60; i++) {
+            const angle = (i * 6) * (Math.PI / 180);
+            const isFive = i % 5 === 0;
+            const length = isFive ? 6 : 3;
             ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
+            ctx.moveTo(centerX + Math.cos(angle) * (clockRadius - 1), centerY + Math.sin(angle) * (clockRadius - 1));
+            ctx.lineTo(centerX + Math.cos(angle) * (clockRadius - 1 - length), centerY + Math.sin(angle) * (clockRadius - 1 - length));
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 0.5;
             ctx.stroke();
         }
 
-        const hourAngle = ((hour % 12) * 30 + (minute / 60) * 30) * Math.PI / 180;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + (radius * 0.5) * Math.sin(hourAngle), cy - (radius * 0.5) * Math.cos(hourAngle));
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 4;
-        ctx.lineCap = 'round';
-        ctx.stroke();
+        // 数字
+        ctx.font = '10px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        for (let i = 1; i <= 12; i++) {
+            const angle = (i * 30 - 90) * (Math.PI / 180);
+            const x = centerX + Math.cos(angle) * (clockRadius - 15);
+            const y = centerY + Math.sin(angle) * (clockRadius - 15);
+            ctx.fillText(i.toString(), x, y);
+        }
 
-        const minuteAngle = (minute * 6) * Math.PI / 180;
+        // 時針 (Math.PI / 180) * (hour * 30 + minute * 0.5 - 90)
+        const hAngle = (hour * 30 + minute * 0.5 - 90) * (Math.PI / 180);
         ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + (radius * 0.8) * Math.sin(minuteAngle), cy - (radius * 0.8) * Math.cos(minuteAngle));
-        ctx.strokeStyle = '#000';
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + Math.cos(hAngle) * (clockRadius * 0.5), centerY + Math.sin(hAngle) * (clockRadius * 0.5));
         ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
         ctx.stroke();
 
+        // 分針
+        const mAngle = (minute * 6 - 90) * (Math.PI / 180);
         ctx.beginPath();
-        ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + Math.cos(mAngle) * (clockRadius * 0.8), centerY + Math.sin(mAngle) * (clockRadius * 0.8));
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 中心点
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 2, 0, 2 * Math.PI);
         ctx.fillStyle = '#000';
         ctx.fill();
     }
 
-    function initClocks() {
-        drawClock('clockA', 15, 30);
-        drawClock('clockB', 14, 30);
-        drawClock('clockC', 6, 12);
-        drawClock('clockD', 14, 0);
-    }
-
+    // 時計の描画実行
     window.onload = function() {
-        initClocks();
-        updateTableBorder();
+        // 正解: 12:00
+        drawClock('clockA', 12, 0); 
+        // 間違い: 1時間ズレ (11:00)
+        drawClock('clockB', 11, 0); 
+        // 間違い: 長針と短針が逆 (12:00の逆は見た目上0:00と同じになりやすいため、ここでは06:00に近い形や、短針を12に伸ばしたものとして表現)
+        // ここでは「30分ズレ」として 12:30 を設定
+        drawClock('clockC', 12, 30); 
+        // 間違い: 12時と間違えやすいが短針が0を指す（逆転イメージ）
+        drawClock('clockD', 6, 0); 
     };
 </script>
 
