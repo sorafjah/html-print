@@ -304,17 +304,29 @@ let currentMode = 'ruby', editMode = 'ruby';
 let imgCurrentTab = 'url';
 let gdriveConvertedUrl = '';
 
-// カーソル位置をエディタで記憶
+// カーソル位置を記憶（エディタ or プレビュー）
 let editorCursorPos = null;
-editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; });
-editor.addEventListener('keyup', () => { editorCursorPos = editor.selectionStart; });
+let previewInsertRange = null; // プレビュー内のカーソル/クリック位置
+
+editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
+editor.addEventListener('keyup', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
+
+// プレビュー内クリックでRange記憶
+preview.addEventListener('mouseup', () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && preview.contains(sel.anchorNode)) {
+        previewInsertRange = sel.getRangeAt(0).cloneRange();
+        previewInsertRange.collapse(true); // カーソル位置（先頭）
+        editorCursorPos = null;
+    }
+});
 
 window.addEventListener('DOMContentLoaded', () => { updateBaseFontSize(); updatePreview(); });
 
 // ===================== 画像挿入モーダル =====================
 function openImgModal() {
-    // モーダルを開く前にエディタのカーソル位置を記憶
-    editorCursorPos = editor.selectionStart;
+    // モーダルを開く前のカーソル位置を確定（プレビュー優先）
+    if (!previewInsertRange) editorCursorPos = editor.selectionStart;
     document.getElementById('img-modal').classList.remove('hidden');
     document.getElementById('img-modal').classList.add('flex');
     gdriveConvertedUrl = '';
@@ -416,12 +428,23 @@ function insertImage() {
 
     const tag = buildImgTag(src);
 
-    // カーソル位置に挿入（記憶した位置 or 末尾）
-    const pos = (editorCursorPos !== null) ? editorCursorPos : editor.value.length;
-    editor.value = editor.value.substring(0, pos) + tag + editor.value.substring(pos);
-    editorCursorPos = pos + tag.length;
-    editor.selectionStart = editor.selectionEnd = editorCursorPos;
-    editor.focus();
+    if (previewInsertRange) {
+        // プレビュー内のクリック位置に挿入
+        const tmpDiv = document.createElement('div');
+        tmpDiv.innerHTML = tag;
+        const frag = document.createDocumentFragment();
+        while (tmpDiv.firstChild) frag.appendChild(tmpDiv.firstChild);
+        previewInsertRange.insertNode(frag);
+        previewInsertRange = null;
+        syncPreviewToEditor();
+    } else {
+        // エディタのカーソル位置に挿入
+        const pos = (editorCursorPos !== null) ? editorCursorPos : editor.value.length;
+        editor.value = editor.value.substring(0, pos) + tag + editor.value.substring(pos);
+        editorCursorPos = pos + tag.length;
+        editor.selectionStart = editor.selectionEnd = editorCursorPos;
+        editor.focus();
+    }
 
     closeImgModal();
     updatePreview();
