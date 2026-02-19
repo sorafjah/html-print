@@ -45,22 +45,10 @@
         #edit-mode-indicator.mode-text { background: #fef9c3; color: #a16207; }
 
         /* 画像挿入モーダル */
-        #img-modal { backdrop-filter: blur(2px); }
         .img-tab { cursor: pointer; padding: 6px 16px; border-bottom: 2px solid transparent; font-size: 0.85rem; font-weight: bold; color: #6b7280; transition: all 0.15s; }
         .img-tab.active { border-bottom-color: #3b82f6; color: #2563eb; }
         .img-tab-panel { display: none; }
         .img-tab-panel.active { display: block; }
-
-        /* ドロップゾーン */
-        #drop-zone {
-            border: 2px dashed #d1d5db; border-radius: 8px; padding: 2rem; text-align: center;
-            cursor: pointer; transition: all 0.2s; background: #f9fafb;
-        }
-        #drop-zone.drag-over { border-color: #3b82f6; background: #eff6ff; }
-        #drop-zone:hover { border-color: #9ca3af; }
-
-        /* 画像プレビュー */
-        #img-preview-thumb { max-width: 100%; max-height: 120px; object-fit: contain; }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
@@ -70,12 +58,12 @@
     <h1 class="text-xl font-bold text-gray-700">ルビふりお2</h1>
     <div class="flex gap-2">
         <button onclick="openInNewTab()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-sm transition">
-            <i class="fas fa-external-link-alt mr-1"></i> 新しいタブで開く
+            WEBサイトで公開
         </button>
         <button onclick="copyHtml()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm transition">
             <i class="fas fa-code mr-1"></i> HTMLコピー
         </button>
-        <button onclick="window.print()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-1.5 rounded text-sm transition">
+        <button onclick="window.print()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded text-sm transition">
             <i class="fas fa-print mr-1"></i> 印刷
         </button>
     </div>
@@ -83,7 +71,6 @@
 
 <!-- ツールバー -->
 <div class="bg-white border-b border-gray-200 p-2 flex flex-wrap gap-3 items-center shrink-0 text-sm">
-    <!-- レイアウト -->
     <div class="flex items-center border-r pr-3 gap-2">
         <span class="text-gray-500 text-xs font-bold uppercase">レイアウト</span>
         <select id="layout-select" onchange="changeLayout()" class="border border-gray-300 rounded p-1">
@@ -91,8 +78,6 @@
             <option value="a4">A4印刷用</option>
         </select>
     </div>
-
-    <!-- 基本サイズ -->
     <div class="flex items-center border-r pr-3 gap-2">
         <span class="text-gray-500 text-xs font-bold uppercase">全体サイズ</span>
         <div class="flex items-center">
@@ -104,22 +89,18 @@
             </div>
         </div>
     </div>
-
-    <!-- 装飾 -->
     <div class="flex items-center border-r pr-3 gap-1">
         <select id="font-family-select" onchange="wrapFontFamily(this.value); this.value='';" class="border border-gray-300 rounded p-1 w-24 mr-1 text-xs">
             <option value="" disabled selected>フォント</option>
             <option value="">デフォルト(UD)</option>
-            <option value="'UD Digi Kyokasho', 'YuKyokasho', 'Kaisho', serif">教科書体</option>
-            <option value="'HiraMinProN-W3', 'YuMincho', 'MS PMincho', serif">明朝体</option>
-            <option value="'Hiragino Kaku Gothic ProN', 'YuGothic', 'MS PGothic', sans-serif">ゴシック</option>
-            <option value="'Hiragino Maru Gothic ProN', 'HGMaruGothicMPRO', 'Rounded Mplus 1c', sans-serif">丸ゴシック</option>
+            <option value="'UD Digi Kyokasho','YuKyokasho','Kaisho',serif">教科書体</option>
+            <option value="'HiraMinProN-W3','YuMincho','MS PMincho',serif">明朝体</option>
+            <option value="'Hiragino Kaku Gothic ProN','YuGothic','MS PGothic',sans-serif">ゴシック</option>
+            <option value="'Hiragino Maru Gothic ProN','HGMaruGothicMPRO','Rounded Mplus 1c',sans-serif">丸ゴシック</option>
         </select>
         <button onmousedown="event.preventDefault()" onclick="wrapSelection('b')" class="p-1.5 hover:bg-gray-100 rounded" title="太字"><i class="fas fa-bold"></i></button>
         <button onmousedown="event.preventDefault()" onclick="wrapColor('red')" class="p-1.5 hover:bg-gray-100 rounded text-red-500" title="赤文字"><i class="fas fa-font"></i></button>
     </div>
-
-    <!-- 選択部分サイズ -->
     <div class="flex items-center border border-gray-300 rounded px-1 bg-gray-50">
         <span class="text-[10px] text-gray-500 mr-1 font-bold">選択文字</span>
         <input type="number" id="sel-font-size" value="16" class="w-10 p-0.5 text-center text-xs border-none bg-transparent focus:ring-0 outline-none">
@@ -128,16 +109,13 @@
             <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▲</button>
             <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(-1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▼</button>
         </div>
-        <button onmousedown="event.preventDefault()" onclick="applyPartialFontSize()" class="ml-1 text-xs text-gray-600 hover:text-blue-500 px-1" title="適用"><i class="fas fa-check"></i></button>
+        <button onmousedown="event.preventDefault()" onclick="applyPartialFontSize()" class="ml-1 text-xs text-gray-600 hover:text-blue-500 px-1"><i class="fas fa-check"></i></button>
     </div>
-
-    <!-- 画像挿入ボタン -->
     <div class="flex items-center border-r pr-3 gap-1">
         <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition">
             <i class="fas fa-image"></i> 画像挿入
         </button>
     </div>
-
     <div class="flex items-center gap-2 ml-auto">
         <a href="https://gemini.google.com/gem/1aQXlT177ks4j2LLC5ooZCyZV3xKGBIlx?usp=sharing" target="_blank"
            class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-100 transition flex items-center shadow-sm">
@@ -148,7 +126,6 @@
 
 <!-- メインエリア -->
 <div class="flex flex-1 overflow-hidden">
-    <!-- エディタ -->
     <div class="w-1/2 flex flex-col border-r border-gray-300 bg-gray-50">
         <div class="p-2 bg-gray-100 border-b text-xs font-bold text-gray-500 flex justify-between">
             <span>HTMLソース入力</span>
@@ -160,20 +137,13 @@
             oninput="updatePreview()"></textarea>
     </div>
 
-    <!-- プレビュー -->
-    <div class="w-1/2 flex flex-col bg-gray-200 overflow-hidden" id="preview-scroller">
+    <div class="w-1/2 flex flex-col bg-gray-200 overflow-hidden">
         <div class="p-2 bg-gray-200/90 backdrop-blur border-b border-gray-300 flex justify-between items-center text-xs font-bold text-gray-500 shrink-0">
             <div class="flex items-center gap-2">
-                <button id="btn-mode-ruby" class="mode-btn active" onclick="setPreviewMode('ruby')">
-                    <i class="fas fa-pen mr-1"></i>ルビ編集
-                </button>
-                <button id="btn-mode-web" class="mode-btn" onclick="setPreviewMode('web')">
-                    <i class="fas fa-globe mr-1"></i>Webレンダリング
-                </button>
+                <button id="btn-mode-ruby" class="mode-btn active" onclick="setPreviewMode('ruby')">ルビ編集</button>
+                <button id="btn-mode-web" class="mode-btn" onclick="setPreviewMode('web')">WEBプレビュー</button>
                 <div class="ml-2 flex items-center gap-1 border-l pl-2">
-                    <span id="edit-mode-indicator" class="mode-ruby">
-                        <i class="fas fa-circle text-[6px]"></i> ルビ修正モード
-                    </span>
+                    <span id="edit-mode-indicator" class="mode-ruby">ルビ修正モード</span>
                     <button id="btn-edit-toggle" onclick="toggleEditMode()" class="text-[10px] bg-white border border-gray-300 hover:bg-yellow-50 hover:border-yellow-400 px-2 py-0.5 rounded transition">
                         <i class="fas fa-exchange-alt mr-1"></i>切替
                     </button>
@@ -190,7 +160,7 @@
 
 <!-- ========== 画像挿入モーダル ========== -->
 <div id="img-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl p-6 w-[480px] shadow-2xl relative">
+    <div class="bg-white rounded-xl p-6 w-[500px] shadow-2xl relative">
         <div class="flex justify-between items-center mb-4">
             <h3 class="font-bold text-lg text-gray-700"><i class="fas fa-image mr-2 text-purple-500"></i>画像を挿入</h3>
             <button onclick="closeImgModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
@@ -199,58 +169,46 @@
         <!-- タブ -->
         <div class="flex border-b border-gray-200 mb-4">
             <div class="img-tab active" id="tab-url" onclick="switchImgTab('url')"><i class="fas fa-link mr-1"></i>URLで挿入</div>
-            <div class="img-tab" id="tab-file" onclick="switchImgTab('file')"><i class="fas fa-upload mr-1"></i>PCからアップロード</div>
-            <div class="img-tab" id="tab-clip" onclick="switchImgTab('clip')"><i class="fas fa-clipboard mr-1"></i>クリップボード</div>
+            <div class="img-tab" id="tab-gdrive" onclick="switchImgTab('gdrive')"><i class="fas fa-brands fa-google-drive mr-1"></i>Googleドライブ</div>
         </div>
 
         <!-- URLタブ -->
         <div id="panel-url" class="img-tab-panel active">
-            <label class="block text-xs text-gray-500 mb-1 font-bold">画像URL（https://〜 または Googleドライブ共有URL）</label>
-            <input id="img-url-input" type="text" class="w-full border border-gray-300 rounded p-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-purple-300"
+            <label class="block text-xs text-gray-500 mb-1 font-bold">画像のURL（https://〜）</label>
+            <input id="img-url-input" type="text" class="w-full border border-gray-300 rounded p-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-purple-300"
                 placeholder="https://example.com/image.png" oninput="previewImgUrl()">
-            <div id="url-gdrive-hint" class="hidden bg-blue-50 border border-blue-200 rounded p-2 text-xs text-blue-700 mb-2">
-                <i class="fas fa-info-circle mr-1"></i>
-                <strong>Googleドライブの場合：</strong>共有URLを貼り付けると自動変換します。<br>
-                ※ドライブ側で「リンクを知っている全員が閲覧可」に設定してください。
-            </div>
-            <div id="url-preview-wrap" class="flex justify-center bg-gray-100 rounded p-2 min-h-[80px] items-center mb-2">
+            <div id="url-preview-wrap" class="flex justify-center bg-gray-100 rounded p-2 min-h-[80px] items-center">
                 <img id="url-preview-img" class="max-w-full max-h-[120px] object-contain hidden" alt="プレビュー">
                 <span id="url-preview-placeholder" class="text-gray-400 text-xs">URLを入力するとプレビューが表示されます</span>
             </div>
         </div>
 
-        <!-- アップロードタブ -->
-        <div id="panel-file" class="img-tab-panel">
-            <div id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
-                <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2 block"></i>
-                <p class="text-sm text-gray-500">クリック or ドラッグ＆ドロップ</p>
-                <p class="text-xs text-gray-400 mt-1">JPG・PNG・GIF・SVG・WebP 対応</p>
+        <!-- Googleドライブタブ -->
+        <div id="panel-gdrive" class="img-tab-panel">
+            <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-3 text-xs text-blue-800 leading-relaxed">
+                <p class="font-bold mb-1"><i class="fas fa-info-circle mr-1"></i>Googleドライブ画像の挿入手順</p>
+                <ol class="list-decimal list-inside space-y-1">
+                    <li>Googleドライブで画像ファイルを右クリック</li>
+                    <li>「共有」→「リンクのコピー」で共有URLを取得</li>
+                    <li>共有設定を <strong>「リンクを知っている全員が閲覧可」</strong> に変更</li>
+                    <li>下のフォームに共有URLを貼り付け</li>
+                </ol>
+                <p class="mt-2 text-amber-700 font-bold"><i class="fas fa-exclamation-triangle mr-1"></i>ブラウザのセキュリティ制限により、直接プレビューはできませんが、HTMLに埋め込んで「WEBサイトで公開」後は表示されます。</p>
             </div>
-            <input id="file-input" type="file" accept="image/*" class="hidden" onchange="onFileSelect(event)">
-            <div id="file-preview-wrap" class="hidden mt-3 flex justify-center bg-gray-100 rounded p-2">
-                <img id="file-preview-img" class="max-w-full max-h-[120px] object-contain" alt="プレビュー">
+            <label class="block text-xs text-gray-500 mb-1 font-bold">Googleドライブ共有URL</label>
+            <input id="gdrive-url-input" type="text" class="w-full border border-gray-300 rounded p-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                placeholder="https://drive.google.com/file/d/XXXXX/view?usp=sharing" oninput="onGdriveInput()">
+            <div id="gdrive-converted" class="hidden bg-green-50 border border-green-200 rounded p-2 text-xs text-green-800">
+                <i class="fas fa-check-circle mr-1"></i>変換済みURL：<span id="gdrive-converted-url" class="font-mono break-all"></span>
             </div>
-            <p id="file-name-label" class="text-xs text-gray-500 mt-1 text-center hidden"></p>
-            <p class="text-xs text-amber-600 mt-2">
-                <i class="fas fa-exclamation-triangle mr-1"></i>
-                ローカル画像はBase64で埋め込まれます。ファイルサイズが大きい場合はHTMLも大きくなります。
-            </p>
-        </div>
-
-        <!-- クリップボードタブ -->
-        <div id="panel-clip" class="img-tab-panel">
-            <div class="bg-gray-50 border border-gray-200 rounded p-4 text-center min-h-[120px] flex flex-col items-center justify-center gap-2" id="clip-zone">
-                <i class="fas fa-paste text-3xl text-gray-400"></i>
-                <p class="text-sm text-gray-500">ここをクリックしてから <kbd class="bg-white border rounded px-1 py-0.5 text-xs">Ctrl+V</kbd> (Mac: <kbd class="bg-white border rounded px-1 py-0.5 text-xs">⌘V</kbd>) で貼り付け</p>
+            <div id="gdrive-error" class="hidden bg-red-50 border border-red-200 rounded p-2 text-xs text-red-700 mt-1">
+                <i class="fas fa-times-circle mr-1"></i>GoogleドライブのURLを正しく貼り付けてください
             </div>
-            <div id="clip-preview-wrap" class="hidden mt-3 flex justify-center bg-gray-100 rounded p-2">
-                <img id="clip-preview-img" class="max-w-full max-h-[120px] object-contain" alt="プレビュー">
-            </div>
-            <p class="text-xs text-gray-400 mt-1 text-center">スクリーンショットなど、クリップボードの画像を直接貼り付けできます。</p>
         </div>
 
         <!-- 共通設定 -->
         <div class="mt-4 border-t pt-4">
+            <p class="text-xs font-bold text-gray-500 mb-2">サイズ・配置設定</p>
             <div class="flex gap-3 flex-wrap items-end">
                 <div>
                     <label class="block text-xs text-gray-500 mb-1">幅</label>
@@ -343,26 +301,31 @@ const editModeIndicator = document.getElementById('edit-mode-indicator');
 
 let currentTargetRuby = null, lastRange = null;
 let currentMode = 'ruby', editMode = 'ruby';
-
-// 画像挿入用
 let imgCurrentTab = 'url';
-let imgBase64Data = null; // file/clip用
+let gdriveConvertedUrl = '';
+
+// カーソル位置をエディタで記憶
+let editorCursorPos = null;
+editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; });
+editor.addEventListener('keyup', () => { editorCursorPos = editor.selectionStart; });
 
 window.addEventListener('DOMContentLoaded', () => { updateBaseFontSize(); updatePreview(); });
 
 // ===================== 画像挿入モーダル =====================
 function openImgModal() {
+    // モーダルを開く前にエディタのカーソル位置を記憶
+    editorCursorPos = editor.selectionStart;
     document.getElementById('img-modal').classList.remove('hidden');
     document.getElementById('img-modal').classList.add('flex');
-    imgBase64Data = null;
+    gdriveConvertedUrl = '';
     switchImgTab('url');
     document.getElementById('img-url-input').value = '';
     document.getElementById('url-preview-img').classList.add('hidden');
+    document.getElementById('url-preview-placeholder').textContent = 'URLを入力するとプレビューが表示されます';
     document.getElementById('url-preview-placeholder').classList.remove('hidden');
-    document.getElementById('url-gdrive-hint').classList.add('hidden');
-    document.getElementById('file-preview-wrap').classList.add('hidden');
-    document.getElementById('clip-preview-wrap').classList.add('hidden');
-    document.getElementById('file-name-label').classList.add('hidden');
+    document.getElementById('gdrive-url-input').value = '';
+    document.getElementById('gdrive-converted').classList.add('hidden');
+    document.getElementById('gdrive-error').classList.add('hidden');
     document.getElementById('img-width').value = '';
     document.getElementById('img-height').value = '';
     document.getElementById('img-align').value = '';
@@ -376,50 +339,23 @@ function closeImgModal() {
 
 function switchImgTab(tab) {
     imgCurrentTab = tab;
-    ['url','file','clip'].forEach(t => {
+    ['url','gdrive'].forEach(t => {
         document.getElementById('tab-' + t).classList.toggle('active', t === tab);
         document.getElementById('panel-' + t).classList.toggle('active', t === tab);
     });
-    // クリップボードタブ選択時にペーストイベントを設定
-    if (tab === 'clip') {
-        document.getElementById('clip-zone').focus();
-    }
 }
 
-// URLプレビュー
 function previewImgUrl() {
-    let url = document.getElementById('img-url-input').value.trim();
-    const hint = document.getElementById('url-gdrive-hint');
-    if (!url) {
-        document.getElementById('url-preview-img').classList.add('hidden');
-        document.getElementById('url-preview-placeholder').classList.remove('hidden');
-        hint.classList.add('hidden');
-        return;
-    }
-    // Googleドライブ共有URLの変換
-    const driveId = extractGdriveId(url);
-    if (driveId) {
-        hint.classList.remove('hidden');
-        url = `https://drive.google.com/uc?export=view&id=${driveId}`;
-        document.getElementById('img-url-input').value = url;
-    } else {
-        hint.classList.add('hidden');
-    }
+    const url = document.getElementById('img-url-input').value.trim();
     const img = document.getElementById('url-preview-img');
-    img.onload = () => {
-        img.classList.remove('hidden');
-        document.getElementById('url-preview-placeholder').classList.add('hidden');
-    };
-    img.onerror = () => {
-        img.classList.add('hidden');
-        document.getElementById('url-preview-placeholder').textContent = '⚠ 画像を読み込めません（URLまたは権限を確認）';
-        document.getElementById('url-preview-placeholder').classList.remove('hidden');
-    };
+    const ph = document.getElementById('url-preview-placeholder');
+    if (!url) { img.classList.add('hidden'); ph.textContent = 'URLを入力するとプレビューが表示されます'; ph.classList.remove('hidden'); return; }
+    img.onload = () => { img.classList.remove('hidden'); ph.classList.add('hidden'); };
+    img.onerror = () => { img.classList.add('hidden'); ph.textContent = '⚠ 画像を読み込めません（URLを確認してください）'; ph.classList.remove('hidden'); };
     img.src = url;
 }
 
 function extractGdriveId(url) {
-    // https://drive.google.com/file/d/XXXX/view や https://drive.google.com/open?id=XXXX
     const m1 = url.match(/drive\.google\.com\/file\/d\/([^/?&]+)/);
     if (m1) return m1[1];
     const m2 = url.match(/[?&]id=([^&]+)/);
@@ -427,72 +363,23 @@ function extractGdriveId(url) {
     return null;
 }
 
-// ファイル選択
-function onFileSelect(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    readImageFile(file, 'file');
-}
-
-function onDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
-function onDragLeave(e) { document.getElementById('drop-zone').classList.remove('drag-over'); }
-function onDrop(e) {
-    e.preventDefault();
-    document.getElementById('drop-zone').classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) readImageFile(file, 'file');
-}
-
-function readImageFile(file, target) {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-        imgBase64Data = ev.target.result; // data:image/...;base64,...
-        if (target === 'file') {
-            const wrap = document.getElementById('file-preview-wrap');
-            wrap.classList.remove('hidden');
-            document.getElementById('file-preview-img').src = imgBase64Data;
-            const label = document.getElementById('file-name-label');
-            label.textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
-            label.classList.remove('hidden');
-        } else {
-            const wrap = document.getElementById('clip-preview-wrap');
-            wrap.classList.remove('hidden');
-            document.getElementById('clip-preview-img').src = imgBase64Data;
-        }
-    };
-    reader.readAsDataURL(file);
-}
-
-// クリップボードペースト
-document.getElementById('clip-zone').addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-        // pasteイベントに任せる
+function onGdriveInput() {
+    const url = document.getElementById('gdrive-url-input').value.trim();
+    const converted = document.getElementById('gdrive-converted');
+    const err = document.getElementById('gdrive-error');
+    if (!url) { converted.classList.add('hidden'); err.classList.add('hidden'); gdriveConvertedUrl = ''; return; }
+    const id = extractGdriveId(url);
+    if (id) {
+        gdriveConvertedUrl = `https://drive.google.com/uc?export=view&id=${id}`;
+        document.getElementById('gdrive-converted-url').textContent = gdriveConvertedUrl;
+        converted.classList.remove('hidden');
+        err.classList.add('hidden');
+    } else {
+        gdriveConvertedUrl = '';
+        converted.classList.add('hidden');
+        err.classList.remove('hidden');
     }
-});
-document.getElementById('clip-zone').addEventListener('paste', (e) => {
-    e.preventDefault();
-    const items = e.clipboardData.items;
-    for (const item of items) {
-        if (item.type.startsWith('image/')) {
-            const file = item.getAsFile();
-            readImageFile(file, 'clip');
-            break;
-        }
-    }
-});
-// グローバルペーストでも対応（クリップボードタブ選択時）
-document.addEventListener('paste', (e) => {
-    if (imgCurrentTab !== 'clip' || !document.getElementById('img-modal').classList.contains('flex')) return;
-    const items = e.clipboardData.items;
-    for (const item of items) {
-        if (item.type.startsWith('image/')) {
-            e.preventDefault();
-            const file = item.getAsFile();
-            readImageFile(file, 'clip');
-            break;
-        }
-    }
-});
+}
 
 function buildImgTag(src) {
     const w = document.getElementById('img-width').value.trim();
@@ -505,34 +392,37 @@ function buildImgTag(src) {
     let style = '';
     if (w) style += `width:${w}${wUnit};`;
     if (h) style += `height:${h}${hUnit};`;
-
-    let floatStyle = '', wrapStart = '', wrapEnd = '';
-    if (align === 'block-center') { wrapStart = '<div style="text-align:center">'; wrapEnd = '</div>'; }
-    else if (align === 'block-left') { wrapStart = '<div style="text-align:left">'; wrapEnd = '</div>'; }
-    else if (align === 'block-right') { wrapStart = '<div style="text-align:right">'; wrapEnd = '</div>'; }
-    else if (align === 'float-left') style += 'float:left;margin-right:0.5em;';
-    else if (align === 'float-right') style += 'float:right;margin-left:0.5em;';
+    if (align === 'float-left') style += 'float:left;margin-right:0.5em;';
+    if (align === 'float-right') style += 'float:right;margin-left:0.5em;';
 
     const styleAttr = style ? ` style="${style}"` : '';
     const imgTag = `<img src="${src}" alt="${alt}"${styleAttr}>`;
-    return wrapStart + imgTag + wrapEnd;
+
+    if (align === 'block-center') return `<div style="text-align:center">${imgTag}</div>`;
+    if (align === 'block-left')   return `<div style="text-align:left">${imgTag}</div>`;
+    if (align === 'block-right')  return `<div style="text-align:right">${imgTag}</div>`;
+    return imgTag;
 }
 
 function insertImage() {
-    let tag = '';
+    let src = '';
     if (imgCurrentTab === 'url') {
-        const url = document.getElementById('img-url-input').value.trim();
-        if (!url) { alert('URLを入力してください'); return; }
-        tag = buildImgTag(url);
-    } else if (imgCurrentTab === 'file' || imgCurrentTab === 'clip') {
-        if (!imgBase64Data) { alert('画像を選択してください'); return; }
-        tag = buildImgTag(imgBase64Data);
+        src = document.getElementById('img-url-input').value.trim();
+        if (!src) { alert('URLを入力してください'); return; }
+    } else if (imgCurrentTab === 'gdrive') {
+        if (!gdriveConvertedUrl) { alert('有効なGoogleドライブURLを入力してください'); return; }
+        src = gdriveConvertedUrl;
     }
 
-    // エディタのカーソル位置に挿入
-    const pos = editor.selectionStart;
+    const tag = buildImgTag(src);
+
+    // カーソル位置に挿入（記憶した位置 or 末尾）
+    const pos = (editorCursorPos !== null) ? editorCursorPos : editor.value.length;
     editor.value = editor.value.substring(0, pos) + tag + editor.value.substring(pos);
-    editor.selectionStart = editor.selectionEnd = pos + tag.length;
+    editorCursorPos = pos + tag.length;
+    editor.selectionStart = editor.selectionEnd = editorCursorPos;
+    editor.focus();
+
     closeImgModal();
     updatePreview();
 }
@@ -540,7 +430,7 @@ function insertImage() {
 // ===================== 編集モード切替 =====================
 function toggleEditMode() {
     if (currentMode !== 'ruby') return;
-    if (editMode === 'ruby') { setEditMode('text'); }
+    if (editMode === 'ruby') setEditMode('text');
     else { syncPreviewToEditor(); setEditMode('ruby'); }
 }
 
@@ -549,16 +439,16 @@ function setEditMode(mode) {
     if (mode === 'text') {
         preview.contentEditable = 'true';
         preview.classList.remove('ruby-edit-mode'); preview.classList.add('text-edit-mode');
-        editModeIndicator.innerHTML = '<i class="fas fa-circle text-[6px]"></i> テキスト編集モード';
+        editModeIndicator.textContent = 'テキスト編集モード';
         editModeIndicator.className = 'mode-text';
         document.getElementById('btn-edit-toggle').textContent = '← ルビ修正へ';
-        previewHint.textContent = 'テキストを直接編集できます（Enterで改行）';
+        previewHint.textContent = 'テキストを直接編集できます';
         preview.querySelectorAll('ruby').forEach(r => { r.onclick = null; });
         preview.addEventListener('input', onPreviewDirectEdit);
     } else {
         preview.contentEditable = 'false';
         preview.classList.add('ruby-edit-mode'); preview.classList.remove('text-edit-mode');
-        editModeIndicator.innerHTML = '<i class="fas fa-circle text-[6px]"></i> ルビ修正モード';
+        editModeIndicator.textContent = 'ルビ修正モード';
         editModeIndicator.className = 'mode-ruby';
         document.getElementById('btn-edit-toggle').innerHTML = '<i class="fas fa-exchange-alt mr-1"></i>切替';
         previewHint.textContent = 'クリックでルビ修正 / 選択してボタンで装飾';
@@ -569,7 +459,7 @@ function setEditMode(mode) {
 
 function onPreviewDirectEdit() { syncPreviewToEditorRaw(); }
 
-// ===================== モード切替（ルビ編集/Web）=====================
+// ===================== プレビューモード切替 =====================
 function setPreviewMode(mode) {
     currentMode = mode;
     const btnRuby = document.getElementById('btn-mode-ruby'), btnWeb = document.getElementById('btn-mode-web');
@@ -591,12 +481,11 @@ function setPreviewMode(mode) {
 
 function updateWebIframe() {
     const size = parseInt(baseFontSizeInput.value) || 12;
-    const fullHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>
+    webIframe.srcdoc = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>
 body{font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;font-size:${size}pt;line-height:2.0;padding:1.5rem;margin:0;overflow-wrap:break-word;}
 table{border-collapse:collapse;margin:0.5em 0;}th,td{border:1px solid #999;padding:4px 8px;}th{background:#f3f4f6;font-weight:bold;}
 ruby{display:inline-ruby;}rt{font-size:0.5em;line-height:1;color:#555;}
 </style></head><body>${editor.value}</body></html>`;
-    webIframe.srcdoc = fullHtml;
 }
 
 function openInNewTab() {
@@ -752,18 +641,14 @@ function syncPreviewToEditor() {
     const clone = preview.cloneNode(true);
     clone.querySelectorAll('table br').forEach(br => br.replaceWith(document.createTextNode('\x00TDBR\x00')));
     clone.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
-    let html = clone.innerHTML;
-    html = html.replace(/\x00TDBR\x00/g, '<br>');
-    editor.value = html;
+    editor.value = clone.innerHTML.replace(/\x00TDBR\x00/g, '<br>');
 }
 function syncPreviewToEditorRaw() {
     const clone = preview.cloneNode(true);
     clone.querySelectorAll('table br').forEach(br => br.replaceWith(document.createTextNode('\x00TDBR\x00')));
     clone.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
     clone.querySelectorAll('div').forEach(div => { div.insertAdjacentText('afterbegin','\n'); div.replaceWith(...div.childNodes); });
-    let html = clone.innerHTML;
-    html = html.replace(/\x00TDBR\x00/g, '<br>');
-    editor.value = html;
+    editor.value = clone.innerHTML.replace(/\x00TDBR\x00/g, '<br>');
 }
 
 function copyHtml() { navigator.clipboard.writeText(editor.value).then(() => alert('コピーしました')); }
