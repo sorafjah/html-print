@@ -11,136 +11,44 @@
             body * { visibility: hidden; }
             #preview-container, #preview-container * { visibility: visible; }
             #preview-container {
-                position: absolute;
-                left: 0; top: 0; width: 100%; margin: 0; padding: 0;
+                position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0;
                 box-shadow: none; background: white;
             }
-            .page-hp {
-                box-shadow: none !important; margin: 0 !important;
-                width: 100% !important; height: auto !important;
-            }
-            .page-a4 {
-                box-shadow: none !important; margin: 0 !important;
-                width: 100% !important; height: auto !important;
-            }
+            .page-hp, .page-a4 { box-shadow: none !important; margin: 0 !important; width: 100% !important; height: auto !important; }
             ruby { ruby-position: over; }
         }
-
         .preview-content {
-            font-family: "BIZ UDPGothic", "BIZ UDGothic", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Yu Gothic", sans-serif;
-            line-height: 2.0;
-            overflow-wrap: break-word;
-            font-size: 12pt;
+            font-family: "BIZ UDPGothic","BIZ UDGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Meiryo","Yu Gothic",sans-serif;
+            line-height: 2.0; overflow-wrap: break-word; font-size: 12pt;
         }
-
-        .page-hp {
-            width: 100%; padding: 2rem; background: white; min-height: 100%;
-        }
-        .page-a4 {
-            width: 210mm; min-height: 297mm; padding: 20mm; margin: 0 auto;
-            background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box;
-        }
-
-        /* ルビ編集モード用スタイル */
-        .ruby-edit-mode ruby {
-            display: inline-ruby;
-            position: relative;
-            cursor: pointer;
-            border-radius: 4px;
-            background-color: transparent;
-            border-bottom: 1px dotted #ccc;
-        }
+        .page-hp { width: 100%; padding: 2rem; background: white; min-height: 100%; }
+        .page-a4 { width: 210mm; min-height: 297mm; padding: 20mm; margin: 0 auto; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .ruby-edit-mode ruby { display: inline-ruby; position: relative; cursor: pointer; border-radius: 4px; background-color: transparent; border-bottom: 1px dotted #ccc; }
         .ruby-edit-mode ruby:hover { background-color: #e0f2fe; }
-        .ruby-edit-mode ruby.editing-active {
-            background-color: #fce7f3; outline: 2px solid #ec4899; z-index: 10;
-        }
-        rt {
-            display: ruby-text; font-size: 0.5em; line-height: 1;
-            text-align: center; color: #555; user-select: none;
-        }
-
-        /* テーブルのデフォルトスタイル（プレビュー内） */
-        #preview-container table {
-            border-collapse: collapse;
-            margin: 0.5em 0;
-        }
-        #preview-container th,
-        #preview-container td {
-            border: 1px solid #999;
-            padding: 4px 8px;
-        }
-        #preview-container th {
-            background: #f3f4f6;
-            font-weight: bold;
-        }
-
-        /* iframeモード */
-        #web-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: white;
-        }
-
+        .ruby-edit-mode ruby.editing-active { background-color: #fce7f3; outline: 2px solid #ec4899; z-index: 10; }
+        rt { display: ruby-text; font-size: 0.5em; line-height: 1; text-align: center; color: #555; user-select: none; }
+        #preview-container table { border-collapse: collapse; margin: 0.5em 0; }
+        #preview-container th, #preview-container td { border: 1px solid #999; padding: 4px 8px; }
+        #preview-container th { background: #f3f4f6; font-weight: bold; }
+        #web-iframe { width: 100%; height: 100%; border: none; background: white; }
         #html-editor { font-family: monospace; white-space: pre-wrap; }
+        .mode-btn { padding: 4px 14px; border-radius: 9999px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.15s; }
+        .mode-btn.active { background: #3b82f6; color: white; }
+        .mode-btn:not(.active) { background: #e5e7eb; color: #374151; }
+        .mode-btn:not(.active):hover { background: #d1d5db; }
+        .text-edit-mode { cursor: text; outline: none; }
+        .text-edit-mode:focus { outline: none; }
+        .text-edit-mode ruby { cursor: text !important; border-bottom: none !important; }
+        .text-edit-mode ruby:hover { background-color: transparent !important; }
+        #edit-mode-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 9999px; transition: all 0.2s; }
+        #edit-mode-indicator.mode-ruby { background: #dcfce7; color: #16a34a; }
+        #edit-mode-indicator.mode-text { background: #fef9c3; color: #a16207; }
 
-        /* モード切替ボタン */
-        .mode-btn {
-            padding: 4px 14px;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .mode-btn.active {
-            background: #3b82f6;
-            color: white;
-        }
-        .mode-btn:not(.active) {
-            background: #e5e7eb;
-            color: #374151;
-        }
-        .mode-btn:not(.active):hover {
-            background: #d1d5db;
-        }
-
-        /* テキスト編集モード用スタイル */
-        .text-edit-mode {
-            cursor: text;
-            outline: none;
-        }
-        .text-edit-mode:focus {
-            outline: none;
-        }
-        /* テキスト編集モード時：rubyはクリックで開かず普通のテキストとして振る舞う */
-        .text-edit-mode ruby {
-            cursor: text !important;
-            border-bottom: none !important;
-        }
-        .text-edit-mode ruby:hover {
-            background-color: transparent !important;
-        }
-
-        /* 編集モードインジケーター */
-        #edit-mode-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 9999px;
-            transition: all 0.2s;
-        }
-        #edit-mode-indicator.mode-ruby {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-        #edit-mode-indicator.mode-text {
-            background: #fef9c3;
-            color: #a16207;
-        }
+        /* 画像挿入モーダル */
+        .img-tab { cursor: pointer; padding: 6px 16px; border-bottom: 2px solid transparent; font-size: 0.85rem; font-weight: bold; color: #6b7280; transition: all 0.15s; }
+        .img-tab.active { border-bottom-color: #3b82f6; color: #2563eb; }
+        .img-tab-panel { display: none; }
+        .img-tab-panel.active { display: block; }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
@@ -150,12 +58,12 @@
     <h1 class="text-xl font-bold text-gray-700">ルビふりお2</h1>
     <div class="flex gap-2">
         <button onclick="openInNewTab()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-sm transition">
-            <i class="fas fa-external-link-alt mr-1"></i> 新しいタブで開く
+            WEBサイトで公開
         </button>
         <button onclick="copyHtml()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm transition">
             <i class="fas fa-code mr-1"></i> HTMLコピー
         </button>
-        <button onclick="window.print()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-1.5 rounded text-sm transition">
+        <button onclick="window.print()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 rounded text-sm transition">
             <i class="fas fa-print mr-1"></i> 印刷
         </button>
     </div>
@@ -163,8 +71,6 @@
 
 <!-- ツールバー -->
 <div class="bg-white border-b border-gray-200 p-2 flex flex-wrap gap-3 items-center shrink-0 text-sm">
-
-    <!-- レイアウト -->
     <div class="flex items-center border-r pr-3 gap-2">
         <span class="text-gray-500 text-xs font-bold uppercase">レイアウト</span>
         <select id="layout-select" onchange="changeLayout()" class="border border-gray-300 rounded p-1">
@@ -172,8 +78,6 @@
             <option value="a4">A4印刷用</option>
         </select>
     </div>
-
-    <!-- 基本サイズ -->
     <div class="flex items-center border-r pr-3 gap-2">
         <span class="text-gray-500 text-xs font-bold uppercase">全体サイズ</span>
         <div class="flex items-center">
@@ -185,35 +89,36 @@
             </div>
         </div>
     </div>
-
-    <!-- 装飾ボタン群 -->
     <div class="flex items-center border-r pr-3 gap-1">
-        <select id="font-family-select" onchange="wrapFontFamily(this.value); this.value='';" class="border border-gray-300 rounded p-1 w-24 mr-1 text-xs" title="選択部分のフォント変更">
+        <select id="font-family-select" onchange="wrapFontFamily(this.value); this.value='';" class="border border-gray-300 rounded p-1 w-24 mr-1 text-xs">
             <option value="" disabled selected>フォント</option>
             <option value="">デフォルト(UD)</option>
-            <option value="'UD Digi Kyokasho', 'YuKyokasho', 'Kaisho', serif">教科書体</option>
-            <option value="'HiraMinProN-W3', 'YuMincho', 'MS PMincho', serif">明朝体</option>
-            <option value="'Hiragino Kaku Gothic ProN', 'YuGothic', 'MS PGothic', sans-serif">ゴシック</option>
-            <option value="'Hiragino Maru Gothic ProN', 'HGMaruGothicMPRO', 'Rounded Mplus 1c', sans-serif">丸ゴシック</option>
+            <option value="'UD Digi Kyokasho','YuKyokasho','Kaisho',serif">教科書体</option>
+            <option value="'HiraMinProN-W3','YuMincho','MS PMincho',serif">明朝体</option>
+            <option value="'Hiragino Kaku Gothic ProN','YuGothic','MS PGothic',sans-serif">ゴシック</option>
+            <option value="'Hiragino Maru Gothic ProN','HGMaruGothicMPRO','Rounded Mplus 1c',sans-serif">丸ゴシック</option>
         </select>
         <button onmousedown="event.preventDefault()" onclick="wrapSelection('b')" class="p-1.5 hover:bg-gray-100 rounded" title="太字"><i class="fas fa-bold"></i></button>
         <button onmousedown="event.preventDefault()" onclick="wrapColor('red')" class="p-1.5 hover:bg-gray-100 rounded text-red-500" title="赤文字"><i class="fas fa-font"></i></button>
     </div>
-
-    <!-- 選択部分のサイズ変更 -->
-    <div class="flex items-center border border-gray-300 rounded px-1 ml-1 bg-gray-50" id="partial-fontsize-box">
+    <div class="flex items-center border border-gray-300 rounded px-1 bg-gray-50">
         <span class="text-[10px] text-gray-500 mr-1 font-bold">選択文字</span>
-        <input type="number" id="sel-font-size" value="16" class="w-10 p-0.5 text-center text-xs border-none bg-transparent focus:ring-0 outline-none" title="サイズを入力してEnter">
+        <input type="number" id="sel-font-size" value="16" class="w-10 p-0.5 text-center text-xs border-none bg-transparent focus:ring-0 outline-none">
         <span class="text-[10px] text-gray-500 mr-1">pt</span>
         <div class="flex flex-col border-l border-gray-300 pl-1">
             <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▲</button>
             <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(-1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▼</button>
         </div>
-        <button onmousedown="event.preventDefault()" onclick="applyPartialFontSize()" class="ml-1 text-xs text-gray-600 hover:text-blue-500 px-1" title="適用"><i class="fas fa-check"></i></button>
+        <button onmousedown="event.preventDefault()" onclick="applyPartialFontSize()" class="ml-1 text-xs text-gray-600 hover:text-blue-500 px-1"><i class="fas fa-check"></i></button>
     </div>
-
+    <div class="flex items-center border-r pr-3 gap-1">
+        <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition">
+            <i class="fas fa-image"></i> 画像挿入
+        </button>
+    </div>
     <div class="flex items-center gap-2 ml-auto">
-        <a href="https://gemini.google.com/gem/1aQXlT177ks4j2LLC5ooZCyZV3xKGBIlx?usp=sharing" target="_blank" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-100 transition flex items-center shadow-sm">
+        <a href="https://gemini.google.com/gem/1aQXlT177ks4j2LLC5ooZCyZV3xKGBIlx?usp=sharing" target="_blank"
+           class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-100 transition flex items-center shadow-sm">
             <i class="fas fa-external-link-alt mr-2"></i> ルビを付けるGemを開く
         </a>
     </div>
@@ -221,7 +126,6 @@
 
 <!-- メインエリア -->
 <div class="flex flex-1 overflow-hidden">
-    <!-- エディタ -->
     <div class="w-1/2 flex flex-col border-r border-gray-300 bg-gray-50">
         <div class="p-2 bg-gray-100 border-b text-xs font-bold text-gray-500 flex justify-between">
             <span>HTMLソース入力</span>
@@ -233,36 +137,123 @@
             oninput="updatePreview()"></textarea>
     </div>
 
-    <!-- プレビュー -->
-    <div class="w-1/2 flex flex-col bg-gray-200 overflow-hidden" id="preview-scroller">
-        <!-- プレビューヘッダー（モード切替付き） -->
+    <div class="w-1/2 flex flex-col bg-gray-200 overflow-hidden">
         <div class="p-2 bg-gray-200/90 backdrop-blur border-b border-gray-300 flex justify-between items-center text-xs font-bold text-gray-500 shrink-0">
             <div class="flex items-center gap-2">
-                <!-- プレビューモード切替 -->
-                <button id="btn-mode-ruby" class="mode-btn active" onclick="setPreviewMode('ruby')">
-                    <i class="fas fa-pen mr-1"></i>ルビ編集
-                </button>
-                <button id="btn-mode-web" class="mode-btn" onclick="setPreviewMode('web')">
-                    <i class="fas fa-globe mr-1"></i>Webレンダリング
-                </button>
-                <!-- 編集モード切替（ルビ編集モード時のみ有効） -->
+                <button id="btn-mode-ruby" class="mode-btn active" onclick="setPreviewMode('ruby')">ルビ編集</button>
+                <button id="btn-mode-web" class="mode-btn" onclick="setPreviewMode('web')">WEBプレビュー</button>
                 <div class="ml-2 flex items-center gap-1 border-l pl-2">
-                    <span id="edit-mode-indicator" class="mode-ruby">
-                        <i class="fas fa-circle text-[6px]"></i> ルビ修正モード
-                    </span>
-                    <button id="btn-edit-toggle" onclick="toggleEditMode()" class="text-[10px] bg-white border border-gray-300 hover:bg-yellow-50 hover:border-yellow-400 px-2 py-0.5 rounded transition" title="テキスト直接編集モードに切り替え">
+                    <span id="edit-mode-indicator" class="mode-ruby">ルビ修正モード</span>
+                    <button id="btn-edit-toggle" onclick="toggleEditMode()" class="text-[10px] bg-white border border-gray-300 hover:bg-yellow-50 hover:border-yellow-400 px-2 py-0.5 rounded transition">
                         <i class="fas fa-exchange-alt mr-1"></i>切替
                     </button>
                 </div>
             </div>
             <span id="preview-hint" class="text-gray-400">クリックでルビ修正 / 選択してボタンで装飾</span>
         </div>
-
         <div class="flex justify-center p-4 min-h-0 flex-1 overflow-y-auto" id="preview-scroll-inner">
-            <!-- ルビ編集モード用コンテナ -->
             <div id="preview-container" class="page-hp preview-content ruby-edit-mode" spellcheck="false"></div>
-            <!-- Webレンダリングモード用iframe -->
             <iframe id="web-iframe" class="hidden" sandbox="allow-same-origin allow-scripts"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- ========== 画像挿入モーダル ========== -->
+<div id="img-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-[500px] shadow-2xl relative">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg text-gray-700"><i class="fas fa-image mr-2 text-purple-500"></i>画像を挿入</h3>
+            <button onclick="closeImgModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+        </div>
+
+        <!-- タブ -->
+        <div class="flex border-b border-gray-200 mb-4">
+            <div class="img-tab active" id="tab-url" onclick="switchImgTab('url')"><i class="fas fa-link mr-1"></i>URLで挿入</div>
+            <div class="img-tab" id="tab-gdrive" onclick="switchImgTab('gdrive')"><i class="fas fa-brands fa-google-drive mr-1"></i>Googleドライブ</div>
+        </div>
+
+        <!-- URLタブ -->
+        <div id="panel-url" class="img-tab-panel active">
+            <label class="block text-xs text-gray-500 mb-1 font-bold">画像のURL（https://〜）</label>
+            <input id="img-url-input" type="text" class="w-full border border-gray-300 rounded p-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-purple-300"
+                placeholder="https://example.com/image.png" oninput="previewImgUrl()">
+            <div id="url-preview-wrap" class="flex justify-center bg-gray-100 rounded p-2 min-h-[80px] items-center">
+                <img id="url-preview-img" class="max-w-full max-h-[120px] object-contain hidden" alt="プレビュー">
+                <span id="url-preview-placeholder" class="text-gray-400 text-xs">URLを入力するとプレビューが表示されます</span>
+            </div>
+        </div>
+
+        <!-- Googleドライブタブ -->
+        <div id="panel-gdrive" class="img-tab-panel">
+            <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-3 text-xs text-blue-800 leading-relaxed">
+                <p class="font-bold mb-1"><i class="fas fa-info-circle mr-1"></i>Googleドライブ画像の挿入手順</p>
+                <ol class="list-decimal list-inside space-y-1">
+                    <li>Googleドライブで画像ファイルを右クリック</li>
+                    <li>「共有」→「リンクのコピー」で共有URLを取得</li>
+                    <li>共有設定を <strong>「リンクを知っている全員が閲覧可」</strong> に変更</li>
+                    <li>下のフォームに共有URLを貼り付け</li>
+                </ol>
+                <p class="mt-2 text-amber-700 font-bold"><i class="fas fa-exclamation-triangle mr-1"></i>ブラウザのセキュリティ制限により、直接プレビューはできませんが、HTMLに埋め込んで「WEBサイトで公開」後は表示されます。</p>
+            </div>
+            <label class="block text-xs text-gray-500 mb-1 font-bold">Googleドライブ共有URL</label>
+            <input id="gdrive-url-input" type="text" class="w-full border border-gray-300 rounded p-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                placeholder="https://drive.google.com/file/d/XXXXX/view?usp=sharing" oninput="onGdriveInput()">
+            <div id="gdrive-converted" class="hidden bg-green-50 border border-green-200 rounded p-2 text-xs text-green-800">
+                <i class="fas fa-check-circle mr-1"></i>変換済みURL：<span id="gdrive-converted-url" class="font-mono break-all"></span>
+            </div>
+            <div id="gdrive-error" class="hidden bg-red-50 border border-red-200 rounded p-2 text-xs text-red-700 mt-1">
+                <i class="fas fa-times-circle mr-1"></i>GoogleドライブのURLを正しく貼り付けてください
+            </div>
+        </div>
+
+        <!-- 共通設定 -->
+        <div class="mt-4 border-t pt-4">
+            <p class="text-xs font-bold text-gray-500 mb-2">サイズ・配置設定</p>
+            <div class="flex gap-3 flex-wrap items-end">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">幅</label>
+                    <div class="flex items-center gap-1">
+                        <input id="img-width" type="text" placeholder="例: 200" class="w-20 border border-gray-300 rounded p-1 text-sm">
+                        <select id="img-width-unit" class="border border-gray-300 rounded p-1 text-xs">
+                            <option value="px">px</option>
+                            <option value="%">%</option>
+                            <option value="em">em</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">高さ</label>
+                    <div class="flex items-center gap-1">
+                        <input id="img-height" type="text" placeholder="auto" class="w-20 border border-gray-300 rounded p-1 text-sm">
+                        <select id="img-height-unit" class="border border-gray-300 rounded p-1 text-xs">
+                            <option value="px">px</option>
+                            <option value="%">%</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">配置</label>
+                    <select id="img-align" class="border border-gray-300 rounded p-1 text-sm">
+                        <option value="">なし（インライン）</option>
+                        <option value="block-center">中央揃え（ブロック）</option>
+                        <option value="block-left">左揃え（ブロック）</option>
+                        <option value="block-right">右揃え（ブロック）</option>
+                        <option value="float-left">左回り込み</option>
+                        <option value="float-right">右回り込み</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1">alt属性</label>
+                    <input id="img-alt" type="text" placeholder="画像の説明" class="border border-gray-300 rounded p-1 text-sm w-28">
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-4">
+            <button onclick="closeImgModal()" class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">キャンセル</button>
+            <button onclick="insertImage()" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-bold transition">
+                <i class="fas fa-check mr-1"></i> 挿入
+            </button>
         </div>
     </div>
 </div>
@@ -300,456 +291,397 @@
 </div>
 
 <script>
-    const editor = document.getElementById('html-editor');
-    const preview = document.getElementById('preview-container');
-    const baseFontSizeInput = document.getElementById('base-font-size');
-    const selFontSizeInput = document.getElementById('sel-font-size');
-    const webIframe = document.getElementById('web-iframe');
-    const previewHint = document.getElementById('preview-hint');
-    const editModeIndicator = document.getElementById('edit-mode-indicator');
+const editor = document.getElementById('html-editor');
+const preview = document.getElementById('preview-container');
+const baseFontSizeInput = document.getElementById('base-font-size');
+const selFontSizeInput = document.getElementById('sel-font-size');
+const webIframe = document.getElementById('web-iframe');
+const previewHint = document.getElementById('preview-hint');
+const editModeIndicator = document.getElementById('edit-mode-indicator');
 
-    let currentTargetRuby = null;
-    let lastRange = null;
-    let currentMode = 'ruby'; // 'ruby' | 'web'
-    let editMode = 'ruby'; // 'ruby' | 'text'
+let currentTargetRuby = null, lastRange = null;
+let currentMode = 'ruby', editMode = 'ruby';
+let imgCurrentTab = 'url';
+let gdriveConvertedUrl = '';
 
-    window.addEventListener('DOMContentLoaded', () => {
-        updateBaseFontSize();
-        updatePreview();
+// カーソル位置を記憶（エディタ or プレビュー）
+let editorCursorPos = null;
+let previewInsertRange = null; // プレビュー内のカーソル/クリック位置
+
+editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
+editor.addEventListener('keyup', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
+
+// プレビュー内クリックでRange記憶
+preview.addEventListener('mouseup', () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && preview.contains(sel.anchorNode)) {
+        previewInsertRange = sel.getRangeAt(0).cloneRange();
+        previewInsertRange.collapse(true); // カーソル位置（先頭）
+        editorCursorPos = null;
+    }
+});
+
+window.addEventListener('DOMContentLoaded', () => { updateBaseFontSize(); updatePreview(); });
+
+// ===================== 画像挿入モーダル =====================
+function openImgModal() {
+    // モーダルを開く前のカーソル位置を確定（プレビュー優先）
+    if (!previewInsertRange) editorCursorPos = editor.selectionStart;
+    document.getElementById('img-modal').classList.remove('hidden');
+    document.getElementById('img-modal').classList.add('flex');
+    gdriveConvertedUrl = '';
+    switchImgTab('url');
+    document.getElementById('img-url-input').value = '';
+    document.getElementById('url-preview-img').classList.add('hidden');
+    document.getElementById('url-preview-placeholder').textContent = 'URLを入力するとプレビューが表示されます';
+    document.getElementById('url-preview-placeholder').classList.remove('hidden');
+    document.getElementById('gdrive-url-input').value = '';
+    document.getElementById('gdrive-converted').classList.add('hidden');
+    document.getElementById('gdrive-error').classList.add('hidden');
+    document.getElementById('img-width').value = '';
+    document.getElementById('img-height').value = '';
+    document.getElementById('img-align').value = '';
+    document.getElementById('img-alt').value = '';
+}
+
+function closeImgModal() {
+    document.getElementById('img-modal').classList.add('hidden');
+    document.getElementById('img-modal').classList.remove('flex');
+}
+
+function switchImgTab(tab) {
+    imgCurrentTab = tab;
+    ['url','gdrive'].forEach(t => {
+        document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+        document.getElementById('panel-' + t).classList.toggle('active', t === tab);
     });
+}
 
-    // =====================
-    // 編集モード切替（ルビ修正 ↔ テキスト直接編集）
-    // =====================
-    function toggleEditMode() {
-        if (currentMode !== 'ruby') return;
-        if (editMode === 'ruby') {
-            setEditMode('text');
-        } else {
-            // テキスト編集モードから戻る際にエディタに同期
-            syncPreviewToEditor();
-            setEditMode('ruby');
-        }
+function previewImgUrl() {
+    const url = document.getElementById('img-url-input').value.trim();
+    const img = document.getElementById('url-preview-img');
+    const ph = document.getElementById('url-preview-placeholder');
+    if (!url) { img.classList.add('hidden'); ph.textContent = 'URLを入力するとプレビューが表示されます'; ph.classList.remove('hidden'); return; }
+    img.onload = () => { img.classList.remove('hidden'); ph.classList.add('hidden'); };
+    img.onerror = () => { img.classList.add('hidden'); ph.textContent = '⚠ 画像を読み込めません（URLを確認してください）'; ph.classList.remove('hidden'); };
+    img.src = url;
+}
+
+function extractGdriveId(url) {
+    const m1 = url.match(/drive\.google\.com\/file\/d\/([^/?&]+)/);
+    if (m1) return m1[1];
+    const m2 = url.match(/[?&]id=([^&]+)/);
+    if (m2 && url.includes('drive.google.com')) return m2[1];
+    return null;
+}
+
+function onGdriveInput() {
+    const url = document.getElementById('gdrive-url-input').value.trim();
+    const converted = document.getElementById('gdrive-converted');
+    const err = document.getElementById('gdrive-error');
+    if (!url) { converted.classList.add('hidden'); err.classList.add('hidden'); gdriveConvertedUrl = ''; return; }
+    const id = extractGdriveId(url);
+    if (id) {
+        gdriveConvertedUrl = `https://drive.google.com/uc?export=view&id=${id}`;
+        document.getElementById('gdrive-converted-url').textContent = gdriveConvertedUrl;
+        converted.classList.remove('hidden');
+        err.classList.add('hidden');
+    } else {
+        gdriveConvertedUrl = '';
+        converted.classList.add('hidden');
+        err.classList.remove('hidden');
+    }
+}
+
+function buildImgTag(src) {
+    const w = document.getElementById('img-width').value.trim();
+    const wUnit = document.getElementById('img-width-unit').value;
+    const h = document.getElementById('img-height').value.trim();
+    const hUnit = document.getElementById('img-height-unit').value;
+    const align = document.getElementById('img-align').value;
+    const alt = document.getElementById('img-alt').value.trim();
+
+    let style = '';
+    if (w) style += `width:${w}${wUnit};`;
+    if (h) style += `height:${h}${hUnit};`;
+    if (align === 'float-left') style += 'float:left;margin-right:0.5em;';
+    if (align === 'float-right') style += 'float:right;margin-left:0.5em;';
+
+    const styleAttr = style ? ` style="${style}"` : '';
+    const imgTag = `<img src="${src}" alt="${alt}"${styleAttr}>`;
+
+    if (align === 'block-center') return `<div style="text-align:center">${imgTag}</div>`;
+    if (align === 'block-left')   return `<div style="text-align:left">${imgTag}</div>`;
+    if (align === 'block-right')  return `<div style="text-align:right">${imgTag}</div>`;
+    return imgTag;
+}
+
+function insertImage() {
+    let src = '';
+    if (imgCurrentTab === 'url') {
+        src = document.getElementById('img-url-input').value.trim();
+        if (!src) { alert('URLを入力してください'); return; }
+    } else if (imgCurrentTab === 'gdrive') {
+        if (!gdriveConvertedUrl) { alert('有効なGoogleドライブURLを入力してください'); return; }
+        src = gdriveConvertedUrl;
     }
 
-    function setEditMode(mode) {
-        editMode = mode;
-        if (mode === 'text') {
-            // テキスト直接編集モード
-            preview.contentEditable = 'true';
-            preview.classList.remove('ruby-edit-mode');
-            preview.classList.add('text-edit-mode');
-            editModeIndicator.innerHTML = '<i class="fas fa-circle text-[6px]"></i> テキスト編集モード';
-            editModeIndicator.className = 'mode-text';
-            document.getElementById('btn-edit-toggle').textContent = '← ルビ修正へ';
-            previewHint.textContent = 'テキストを直接編集できます（Enterで改行）';
-            // ruby clickを無効化
-            preview.querySelectorAll('ruby').forEach(r => {
-                r.onclick = null;
-            });
-            // contenteditable内での入力をエディタに反映
-            preview.addEventListener('input', onPreviewDirectEdit);
-        } else {
-            // ルビ修正モード
-            preview.contentEditable = 'false';
-            preview.classList.add('ruby-edit-mode');
-            preview.classList.remove('text-edit-mode');
-            editModeIndicator.innerHTML = '<i class="fas fa-circle text-[6px]"></i> ルビ修正モード';
-            editModeIndicator.className = 'mode-ruby';
-            document.getElementById('btn-edit-toggle').innerHTML = '<i class="fas fa-exchange-alt mr-1"></i>切替';
-            previewHint.textContent = 'クリックでルビ修正 / 選択してボタンで装飾';
-            preview.removeEventListener('input', onPreviewDirectEdit);
-            attachRubyClickEvents();
-        }
+    const tag = buildImgTag(src);
+
+    if (previewInsertRange) {
+        // プレビュー内のクリック位置に挿入
+        const tmpDiv = document.createElement('div');
+        tmpDiv.innerHTML = tag;
+        const frag = document.createDocumentFragment();
+        while (tmpDiv.firstChild) frag.appendChild(tmpDiv.firstChild);
+        previewInsertRange.insertNode(frag);
+        previewInsertRange = null;
+        syncPreviewToEditor();
+    } else {
+        // エディタのカーソル位置に挿入
+        const pos = (editorCursorPos !== null) ? editorCursorPos : editor.value.length;
+        editor.value = editor.value.substring(0, pos) + tag + editor.value.substring(pos);
+        editorCursorPos = pos + tag.length;
+        editor.selectionStart = editor.selectionEnd = editorCursorPos;
+        editor.focus();
     }
 
-    function onPreviewDirectEdit() {
-        // テキスト直接編集モード中にエディタをリアルタイム同期
-        syncPreviewToEditorRaw();
-    }
+    closeImgModal();
+    updatePreview();
+}
 
-    // =====================
-    // モード切替（ルビ編集 / Webレンダリング）
-    // =====================
-    function setPreviewMode(mode) {
-        currentMode = mode;
-        const btnRuby = document.getElementById('btn-mode-ruby');
-        const btnWeb = document.getElementById('btn-mode-web');
-        const editToggleArea = document.querySelector('#btn-edit-toggle').parentElement;
+// ===================== 編集モード切替 =====================
+function toggleEditMode() {
+    if (currentMode !== 'ruby') return;
+    if (editMode === 'ruby') setEditMode('text');
+    else { syncPreviewToEditor(); setEditMode('ruby'); }
+}
 
-        if (mode === 'ruby') {
-            btnRuby.classList.add('active');
-            btnWeb.classList.remove('active');
-            preview.classList.remove('hidden');
-            webIframe.classList.add('hidden');
-            editToggleArea.style.opacity = '1';
-            editToggleArea.style.pointerEvents = 'auto';
-            previewHint.textContent = editMode === 'text'
-                ? 'テキストを直接編集できます（Enterで改行）'
-                : 'クリックでルビ修正 / 選択してボタンで装飾';
-            updatePreview();
-        } else {
-            btnWeb.classList.add('active');
-            btnRuby.classList.remove('active');
-            preview.classList.add('hidden');
-            webIframe.classList.remove('hidden');
-            editToggleArea.style.opacity = '0.4';
-            editToggleArea.style.pointerEvents = 'none';
-            previewHint.textContent = 'HTMLをそのまま表示（編集はルビ編集モードで）';
-            updateWebIframe();
-        }
-    }
-
-    function updateWebIframe() {
-        const html = editor.value;
-        const size = parseInt(baseFontSizeInput.value) || 12;
-        const fullHtml = `<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<style>
-  body {
-    font-family: "BIZ UDPGothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;
-    font-size: ${size}pt;
-    line-height: 2.0;
-    padding: 1.5rem;
-    margin: 0;
-    overflow-wrap: break-word;
-  }
-  table { border-collapse: collapse; margin: 0.5em 0; }
-  th, td { border: 1px solid #999; padding: 4px 8px; }
-  th { background: #f3f4f6; font-weight: bold; }
-  ruby { display: inline-ruby; }
-  rt { font-size: 0.5em; line-height: 1; color: #555; }
-</style>
-</head>
-<body>${html}</body>
-</html>`;
-        webIframe.srcdoc = fullHtml;
-    }
-
-    // =====================
-    // 新しいタブで全画面表示
-    // =====================
-    function openInNewTab() {
-        const html = editor.value;
-        const size = parseInt(baseFontSizeInput.value) || 12;
-        const fullHtml = `<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ルビふりお2 - プレビュー</title>
-<style>
-  body {
-    font-family: "BIZ UDPGothic","BIZ UDGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Meiryo","Yu Gothic",sans-serif;
-    font-size: ${size}pt;
-    line-height: 2.0;
-    padding: 2rem;
-    margin: 0;
-    overflow-wrap: break-word;
-    background: white;
-  }
-  table { border-collapse: collapse; margin: 0.5em 0; }
-  th, td { border: 1px solid #999; padding: 4px 8px; }
-  th { background: #f3f4f6; font-weight: bold; }
-  ruby { display: inline-ruby; }
-  rt { font-size: 0.5em; line-height: 1; color: #555; text-align: center; }
-</style>
-</head>
-<body>${html}</body>
-</html>`;
-        const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-        // 少し待ってからURLを解放
-        setTimeout(() => URL.revokeObjectURL(url), 10000);
-    }
-
-    // =====================
-    // 選択範囲の記憶
-    // =====================
-    function capturePreviewSelectionRange() {
-        if (editMode === 'text') return; // テキスト編集中はスキップ
-        const sel = window.getSelection();
-        if (!sel || sel.rangeCount === 0) return;
-        const r = sel.getRangeAt(0);
-        if (!r.collapsed && preview.contains(r.commonAncestorContainer)) {
-            lastRange = r.cloneRange();
-        }
-    }
-
-    document.addEventListener('selectionchange', () => {
-        capturePreviewSelectionRange();
-    });
-
-    ['pointerdown', 'mousedown', 'touchstart'].forEach(evt => {
-        selFontSizeInput.addEventListener(evt, () => {
-            capturePreviewSelectionRange();
-        }, { passive: true });
-    });
-
-    // =====================
-    // プレビュー更新
-    // =====================
-    function updatePreview() {
-        if (currentMode === 'web') {
-            updateWebIframe();
-            return;
-        }
-
-        // テキスト編集モード中はエディタからの更新をしない（直接編集優先）
-        if (editMode === 'text') return;
-
-        const rawText = editor.value;
-        const htmlContent = smartBrConvert(rawText);
-        preview.innerHTML = htmlContent;
+function setEditMode(mode) {
+    editMode = mode;
+    if (mode === 'text') {
+        preview.contentEditable = 'true';
+        preview.classList.remove('ruby-edit-mode'); preview.classList.add('text-edit-mode');
+        editModeIndicator.textContent = 'テキスト編集モード';
+        editModeIndicator.className = 'mode-text';
+        document.getElementById('btn-edit-toggle').textContent = '← ルビ修正へ';
+        previewHint.textContent = 'テキストを直接編集できます';
+        preview.querySelectorAll('ruby').forEach(r => { r.onclick = null; });
+        preview.addEventListener('input', onPreviewDirectEdit);
+    } else {
+        preview.contentEditable = 'false';
+        preview.classList.add('ruby-edit-mode'); preview.classList.remove('text-edit-mode');
+        editModeIndicator.textContent = 'ルビ修正モード';
+        editModeIndicator.className = 'mode-ruby';
+        document.getElementById('btn-edit-toggle').innerHTML = '<i class="fas fa-exchange-alt mr-1"></i>切替';
+        previewHint.textContent = 'クリックでルビ修正 / 選択してボタンで装飾';
+        preview.removeEventListener('input', onPreviewDirectEdit);
         attachRubyClickEvents();
     }
+}
 
-    /**
-     * <br>変換の改善版:
-     * <table>〜</table> や <pre>〜</pre> の中にある \n は <br> に変換しない。
-     */
-    function smartBrConvert(html) {
-        const PRESERVE_TAGS = ['table', 'pre', 'ol', 'ul', 'dl', 'style', 'script'];
-        const pattern = new RegExp(
-            `(<(?:${PRESERVE_TAGS.join('|')})[^>]*>[\\s\\S]*?</(?:${PRESERVE_TAGS.join('|')})>)`,
-            'gi'
-        );
+function onPreviewDirectEdit() { syncPreviewToEditorRaw(); }
 
-        const blocks = [];
-        let processed = html.replace(pattern, (match) => {
-            const idx = blocks.length;
-            blocks.push(match);
-            return `\x00BLOCK${idx}\x00`;
-        });
-
-        processed = processed.replace(/\n/g, '<br>');
-
-        processed = processed.replace(/\x00BLOCK(\d+)\x00/g, (_, idx) => blocks[parseInt(idx)]);
-
-        return processed;
-    }
-
-    function updateBaseFontSize() {
-        let size = parseInt(baseFontSizeInput.value) || 12;
-        preview.style.fontSize = size + 'pt';
-        if (currentMode === 'web') updateWebIframe();
-    }
-    function stepFontSize(amount) {
-        let current = parseInt(baseFontSizeInput.value) || 12;
-        let next = Math.max(6, current + amount);
-        baseFontSizeInput.value = next;
-        updateBaseFontSize();
-    }
-
-    function changeLayout() {
-        const type = document.getElementById('layout-select').value;
-        preview.className = `preview-content ruby-edit-mode ${type === 'a4' ? 'page-a4' : 'page-hp'}`;
-    }
-
-    // =====================
-    // =====================
-    function applyStyleToSelection(startTag, endTag) {
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0 && preview.contains(selection.anchorNode)) {
-            applyStyleToPreview(startTag, endTag, selection.getRangeAt(0));
-        } else if (lastRange && preview.contains(lastRange.commonAncestorContainer)) {
-            applyStyleToPreview(startTag, endTag, lastRange);
-        } else {
-            insertTagToEditor(startTag, endTag);
-        }
-    }
-
-    function applyStyleToPreview(startTag, endTag, range) {
-        if (!range || range.collapsed) return;
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = startTag + 'dummy' + endTag;
-        const wrapper = tempDiv.firstElementChild;
-        if (wrapper) {
-            try {
-                const liveRange = range.cloneRange();
-                const content = liveRange.extractContents();
-                wrapper.innerHTML = "";
-                wrapper.appendChild(content);
-                liveRange.insertNode(wrapper);
-                syncPreviewToEditor();
-                const newRange = document.createRange();
-                newRange.selectNodeContents(wrapper);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(newRange);
-                lastRange = newRange.cloneRange();
-            } catch (e) {
-                console.error("Selection wrap failed:", e);
-                alert("その選択範囲には適用できませんでした（タグ構造が複雑な可能性があります）");
-            }
-        }
-    }
-
-    function insertTagToEditor(startTag, endTag) {
-        const start = editor.selectionStart;
-        const end = editor.selectionEnd;
-        const text = editor.value;
-        editor.value = text.substring(0, start) + startTag + text.substring(start, end) + endTag + text.substring(end);
-        editor.focus();
-        editor.selectionStart = start + startTag.length;
-        editor.selectionEnd = end + startTag.length;
+// ===================== プレビューモード切替 =====================
+function setPreviewMode(mode) {
+    currentMode = mode;
+    const btnRuby = document.getElementById('btn-mode-ruby'), btnWeb = document.getElementById('btn-mode-web');
+    const editToggleArea = document.getElementById('btn-edit-toggle').parentElement;
+    if (mode === 'ruby') {
+        btnRuby.classList.add('active'); btnWeb.classList.remove('active');
+        preview.classList.remove('hidden'); webIframe.classList.add('hidden');
+        editToggleArea.style.opacity = '1'; editToggleArea.style.pointerEvents = 'auto';
+        previewHint.textContent = editMode === 'text' ? 'テキストを直接編集できます' : 'クリックでルビ修正 / 選択してボタンで装飾';
         updatePreview();
+    } else {
+        btnWeb.classList.add('active'); btnRuby.classList.remove('active');
+        preview.classList.add('hidden'); webIframe.classList.remove('hidden');
+        editToggleArea.style.opacity = '0.4'; editToggleArea.style.pointerEvents = 'none';
+        previewHint.textContent = 'HTMLをそのまま表示';
+        updateWebIframe();
     }
+}
 
-    function wrapSelection(tag) { applyStyleToSelection(`<${tag}>`, `</${tag}>`); }
-    function wrapColor(color) { applyStyleToSelection(`<span style="color:${color}">`, `</span>`); }
-    function wrapFontFamily(font) {
-        if (font === "") return;
-        applyStyleToSelection(`<span style="font-family:${font}">`, `</span>`);
+function updateWebIframe() {
+    const size = parseInt(baseFontSizeInput.value) || 12;
+    webIframe.srcdoc = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>
+body{font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;font-size:${size}pt;line-height:2.0;padding:1.5rem;margin:0;overflow-wrap:break-word;}
+table{border-collapse:collapse;margin:0.5em 0;}th,td{border:1px solid #999;padding:4px 8px;}th{background:#f3f4f6;font-weight:bold;}
+ruby{display:inline-ruby;}rt{font-size:0.5em;line-height:1;color:#555;}
+</style></head><body>${editor.value}</body></html>`;
+}
+
+function openInNewTab() {
+    const size = parseInt(baseFontSizeInput.value) || 12;
+    const fullHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ルビふりお2</title><style>
+body{font-family:"BIZ UDPGothic","BIZ UDGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Meiryo","Yu Gothic",sans-serif;font-size:${size}pt;line-height:2.0;padding:2rem;margin:0;overflow-wrap:break-word;background:white;}
+table{border-collapse:collapse;margin:0.5em 0;}th,td{border:1px solid #999;padding:4px 8px;}th{background:#f3f4f6;font-weight:bold;}
+ruby{display:inline-ruby;}rt{font-size:0.5em;line-height:1;color:#555;text-align:center;}
+</style></head><body>${editor.value}</body></html>`;
+    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// ===================== 選択範囲の記憶 =====================
+function capturePreviewSelectionRange() {
+    if (editMode === 'text') return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const r = sel.getRangeAt(0);
+    if (!r.collapsed && preview.contains(r.commonAncestorContainer)) lastRange = r.cloneRange();
+}
+document.addEventListener('selectionchange', capturePreviewSelectionRange);
+['pointerdown','mousedown','touchstart'].forEach(evt => {
+    selFontSizeInput.addEventListener(evt, capturePreviewSelectionRange, { passive: true });
+});
+
+// ===================== プレビュー更新 =====================
+function updatePreview() {
+    if (currentMode === 'web') { updateWebIframe(); return; }
+    if (editMode === 'text') return;
+    preview.innerHTML = smartBrConvert(editor.value);
+    attachRubyClickEvents();
+}
+
+function smartBrConvert(html) {
+    const PRESERVE = ['table','pre','ol','ul','dl','style','script'];
+    const pat = new RegExp(`(<(?:${PRESERVE.join('|')})[^>]*>[\\s\\S]*?</(?:${PRESERVE.join('|')})>)`, 'gi');
+    const blocks = [];
+    let p = html.replace(pat, m => { blocks.push(m); return `\x00B${blocks.length-1}\x00`; });
+    p = p.replace(/\n/g, '<br>');
+    return p.replace(/\x00B(\d+)\x00/g, (_, i) => blocks[+i]);
+}
+
+function updateBaseFontSize() {
+    preview.style.fontSize = (parseInt(baseFontSizeInput.value) || 12) + 'pt';
+    if (currentMode === 'web') updateWebIframe();
+}
+function stepFontSize(d) { baseFontSizeInput.value = Math.max(6, (parseInt(baseFontSizeInput.value)||12)+d); updateBaseFontSize(); }
+function changeLayout() {
+    const t = document.getElementById('layout-select').value;
+    preview.className = `preview-content ruby-edit-mode ${t === 'a4' ? 'page-a4' : 'page-hp'}`;
+}
+
+// ===================== 装飾 =====================
+function applyStyleToSelection(s, e2) {
+    const sel = window.getSelection();
+    if (sel.rangeCount > 0 && preview.contains(sel.anchorNode)) applyStyleToPreview(s, e2, sel.getRangeAt(0));
+    else if (lastRange && preview.contains(lastRange.commonAncestorContainer)) applyStyleToPreview(s, e2, lastRange);
+    else insertTagToEditor(s, e2);
+}
+function applyStyleToPreview(s, e2, range) {
+    if (!range || range.collapsed) return;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = s + 'dummy' + e2;
+    const wrapper = tmp.firstElementChild;
+    if (wrapper) {
+        try {
+            const lr = range.cloneRange();
+            const content = lr.extractContents();
+            wrapper.innerHTML = ''; wrapper.appendChild(content);
+            lr.insertNode(wrapper);
+            syncPreviewToEditor();
+            const nr = document.createRange(); nr.selectNodeContents(wrapper);
+            const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(nr);
+            lastRange = nr.cloneRange();
+        } catch(err) { alert('その選択範囲には適用できませんでした'); }
     }
+}
+function insertTagToEditor(s, e2) {
+    const start = editor.selectionStart, end = editor.selectionEnd, txt = editor.value;
+    editor.value = txt.substring(0,start) + s + txt.substring(start,end) + e2 + txt.substring(end);
+    editor.focus(); editor.selectionStart = start+s.length; editor.selectionEnd = end+s.length;
+    updatePreview();
+}
+function wrapSelection(tag) { applyStyleToSelection(`<${tag}>`, `</${tag}>`); }
+function wrapColor(c) { applyStyleToSelection(`<span style="color:${c}">`, '</span>'); }
+function wrapFontFamily(f) { if (!f) return; applyStyleToSelection(`<span style="font-family:${f}">`, '</span>'); }
+function applyPartialFontSize() {
+    const s = parseInt(selFontSizeInput.value); if (!s || s < 6) return;
+    applyStyleToSelection(`<span style="font-size:${s}pt">`, '</span>');
+}
+function applyPartialFontSizeStep(d) {
+    capturePreviewSelectionRange();
+    selFontSizeInput.value = Math.max(6, (parseInt(selFontSizeInput.value)||16)+d);
+    applyPartialFontSize();
+}
 
-    function applyPartialFontSize() {
-        const size = parseInt(selFontSizeInput.value);
-        if (!size || size < 6) return;
-        applyStyleToSelection(`<span style="font-size:${size}pt">`, `</span>`);
-    }
-
-    function applyPartialFontSizeStep(amount) {
-        capturePreviewSelectionRange();
-        let current = parseInt(selFontSizeInput.value) || 16;
-        let next = Math.max(6, current + amount);
-        selFontSizeInput.value = next;
-        applyPartialFontSize();
-    }
-
-    // =====================
-    // ルビ機能
-    // =====================
-    function attachRubyClickEvents() {
-        preview.querySelectorAll('ruby').forEach(ruby => {
-            ruby.onclick = (e) => { e.stopPropagation(); openRubyModal(ruby); };
-            ruby.title = "修正する";
-        });
-    }
-
-    const modal = document.getElementById('ruby-modal');
-    const modalKanjiDisplay = document.getElementById('modal-kanji-display');
-    const modalRuby = document.getElementById('modal-ruby');
-
-    function openRubyModal(rubyElement) {
-        if (editMode !== 'ruby') return; // テキスト編集モード中は開かない
-        if (currentTargetRuby) currentTargetRuby.classList.remove('editing-active');
-        currentTargetRuby = rubyElement;
-        currentTargetRuby.classList.add('editing-active');
-        let kanjiText = "";
-        rubyElement.childNodes.forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE) kanjiText += node.textContent;
-        });
-        const rt = rubyElement.querySelector('rt');
-        modalKanjiDisplay.textContent = kanjiText;
-        modalRuby.value = rt ? rt.textContent : "";
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        modalRuby.focus();
-    }
-
-    function closeRubyModal() {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        if (currentTargetRuby) {
-            currentTargetRuby.classList.remove('editing-active');
-            currentTargetRuby = null;
-        }
-    }
-
-    function saveRubyAndStay() {
-        if (!currentTargetRuby) return;
-        const rt = currentTargetRuby.querySelector('rt');
-        if (rt) rt.textContent = modalRuby.value;
-        syncPreviewToEditor();
-    }
-
-    function navigateRuby(direction) {
-        if (!currentTargetRuby) return;
-        saveRubyAndStay();
-        const allRubies = Array.from(preview.querySelectorAll('ruby'));
-        const nextIndex = allRubies.indexOf(currentTargetRuby) + direction;
-        if (nextIndex >= 0 && nextIndex < allRubies.length) {
-            openRubyModal(allRubies[nextIndex]);
-        } else {
-            closeRubyModal();
-        }
-    }
-
-    function removeRubyTag() {
-        if (!currentTargetRuby) return;
-        let kanjiText = "";
-        currentTargetRuby.childNodes.forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE) kanjiText += node.textContent;
-        });
-        currentTargetRuby.parentNode.replaceChild(document.createTextNode(kanjiText), currentTargetRuby);
-        syncPreviewToEditor();
-        closeRubyModal();
-    }
-
-    // =====================
-    // プレビュー → エディタ同期
-    // =====================
-    function syncPreviewToEditor() {
-        const clone = preview.cloneNode(true);
-
-        // テーブル外の <br> だけ \n に変換
-        clone.querySelectorAll('table br').forEach(br => {
-            br.replaceWith(document.createTextNode('\x00TDBR\x00'));
-        });
-
-        clone.querySelectorAll('br').forEach(br => {
-            br.replaceWith(document.createTextNode('\n'));
-        });
-
-        let html = clone.innerHTML;
-        html = html.replace(/\x00TDBR\x00/g, '<br>');
-
-        editor.value = html;
-    }
-
-    // テキスト直接編集モード用の同期（contentEditableのinnerHTMLをそのまま取得）
-    function syncPreviewToEditorRaw() {
-        const clone = preview.cloneNode(true);
-
-        // テーブル外のbrのみ\nに
-        clone.querySelectorAll('table br').forEach(br => {
-            br.replaceWith(document.createTextNode('\x00TDBR\x00'));
-        });
-        clone.querySelectorAll('br').forEach(br => {
-            br.replaceWith(document.createTextNode('\n'));
-        });
-        // divタグ（contentEditableが挿入するもの）を改行に
-        clone.querySelectorAll('div').forEach(div => {
-            div.insertAdjacentText('afterbegin', '\n');
-            div.replaceWith(...div.childNodes);
-        });
-
-        let html = clone.innerHTML;
-        html = html.replace(/\x00TDBR\x00/g, '<br>');
-
-        editor.value = html;
-    }
-
-    function copyHtml() {
-        navigator.clipboard.writeText(editor.value).then(() => alert('コピーしました'));
-    }
-
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeRubyModal(); });
-    modalRuby.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); navigateRuby(1); }
+// ===================== ルビ機能 =====================
+function attachRubyClickEvents() {
+    preview.querySelectorAll('ruby').forEach(r => {
+        r.onclick = (e) => { e.stopPropagation(); openRubyModal(r); };
+        r.title = '修正する';
     });
+}
 
-    selFontSizeInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            capturePreviewSelectionRange();
-            applyPartialFontSize();
-        }
-    });
+const modal = document.getElementById('ruby-modal');
+const modalKanjiDisplay = document.getElementById('modal-kanji-display');
+const modalRuby = document.getElementById('modal-ruby');
+
+function openRubyModal(rubyEl) {
+    if (editMode !== 'ruby') return;
+    if (currentTargetRuby) currentTargetRuby.classList.remove('editing-active');
+    currentTargetRuby = rubyEl;
+    currentTargetRuby.classList.add('editing-active');
+    let kanji = '';
+    rubyEl.childNodes.forEach(n => { if (n.nodeType === Node.TEXT_NODE) kanji += n.textContent; });
+    const rt = rubyEl.querySelector('rt');
+    modalKanjiDisplay.textContent = kanji;
+    modalRuby.value = rt ? rt.textContent : '';
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    modalRuby.focus();
+}
+function closeRubyModal() {
+    modal.classList.add('hidden'); modal.classList.remove('flex');
+    if (currentTargetRuby) { currentTargetRuby.classList.remove('editing-active'); currentTargetRuby = null; }
+}
+function saveRubyAndStay() {
+    if (!currentTargetRuby) return;
+    const rt = currentTargetRuby.querySelector('rt');
+    if (rt) rt.textContent = modalRuby.value;
+    syncPreviewToEditor();
+}
+function navigateRuby(dir) {
+    if (!currentTargetRuby) return;
+    saveRubyAndStay();
+    const all = Array.from(preview.querySelectorAll('ruby'));
+    const ni = all.indexOf(currentTargetRuby) + dir;
+    if (ni >= 0 && ni < all.length) openRubyModal(all[ni]);
+    else closeRubyModal();
+}
+function removeRubyTag() {
+    if (!currentTargetRuby) return;
+    let kanji = '';
+    currentTargetRuby.childNodes.forEach(n => { if (n.nodeType === Node.TEXT_NODE) kanji += n.textContent; });
+    currentTargetRuby.parentNode.replaceChild(document.createTextNode(kanji), currentTargetRuby);
+    syncPreviewToEditor(); closeRubyModal();
+}
+
+// ===================== 同期 =====================
+function syncPreviewToEditor() {
+    const clone = preview.cloneNode(true);
+    clone.querySelectorAll('table br').forEach(br => br.replaceWith(document.createTextNode('\x00TDBR\x00')));
+    clone.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
+    editor.value = clone.innerHTML.replace(/\x00TDBR\x00/g, '<br>');
+}
+function syncPreviewToEditorRaw() {
+    const clone = preview.cloneNode(true);
+    clone.querySelectorAll('table br').forEach(br => br.replaceWith(document.createTextNode('\x00TDBR\x00')));
+    clone.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
+    clone.querySelectorAll('div').forEach(div => { div.insertAdjacentText('afterbegin','\n'); div.replaceWith(...div.childNodes); });
+    editor.value = clone.innerHTML.replace(/\x00TDBR\x00/g, '<br>');
+}
+
+function copyHtml() { navigator.clipboard.writeText(editor.value).then(() => alert('コピーしました')); }
+
+modal.addEventListener('click', (e) => { if (e.target === modal) closeRubyModal(); });
+document.getElementById('img-modal').addEventListener('click', (e) => { if (e.target === document.getElementById('img-modal')) closeImgModal(); });
+modalRuby.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); navigateRuby(1); } });
+selFontSizeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); capturePreviewSelectionRange(); applyPartialFontSize(); }
+});
 </script>
 </body>
 </html>
