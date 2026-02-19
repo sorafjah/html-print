@@ -3,928 +3,596 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTMLプリントエディタ</title>
+    <title>ルビふりお2 - 画像対応版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* * =========================================
-         * アプリ全体のUIデザイン (App UI)
-         * =========================================
-         */
-        :root {
-            --primary-color: #0066cc;
-            --bg-color: #f4f7fa;
-            --text-color: #333;
-            --border-color: #dde2e5;
-            --paper-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        body {
-            font-family: "BIZ UDPGothic", "BIZ UD Pゴシック", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            color: var(--text-color);
-            overflow: hidden;
-        }
-
-        /* サイドバー */
-        .sidebar {
-            width: 280px;
-            background-color: #ffffff;
-            border-right: 1px solid var(--border-color);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            overflow-y: auto;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.02);
-            z-index: 10;
-        }
-
-        .logo {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary-color);
-            margin-bottom: 5px;
-        }
-
-        .tool-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .tool-label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 4px;
-        }
-
-        .control-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        input[type="number"] {
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-            width: 60px;
-        }
-
-        select {
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-family: inherit;
-        }
-
-        button {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-            color: #333;
-            user-select: none;
-        }
-
-        button:hover {
-            background-color: #f0f8ff;
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-        }
-
-        button.active {
-            background-color: var(--primary-color);
-            color: #fff;
-            border-color: var(--primary-color);
-        }
-
-        button.primary-btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            font-weight: bold;
-            padding: 10px;
-        }
-        button.primary-btn:hover {
-            background-color: #0052a3;
-        }
-
-        button.sm-btn {
-            padding: 4px 8px;
-            font-size: 12px;
-        }
-
-        /* メインエリア */
-        .main-area {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        /* 用紙 */
-        #paper-container {
-            background-color: #fff;
-            width: 210mm;
-            min-height: 297mm;
-            padding: 20mm;
-            box-shadow: var(--paper-shadow);
-            box-sizing: border-box;
-            outline: none;
-            position: relative;
-        }
-
-        /* Web表示モード時のスタイル */
-        body.mode-web .sidebar { display: none; }
-        body.mode-web .main-area {
-            padding: 0;
-            background-color: #fff;
-            display: block;
-        }
-        body.mode-web #paper-container {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            box-shadow: none;
-            min-height: 100vh;
-        }
-        body.mode-web .instruction-banner { display: none !important; }
-
-        .gear-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            color: #555;
-            font-size: 24px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
-            border: 1px solid #ccc;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            transition: transform 0.3s, background 0.3s;
-        }
-        .gear-btn:hover {
-            transform: rotate(90deg);
-            background: #fff;
-            color: var(--primary-color);
-        }
-        body.mode-web .gear-btn { display: flex; }
-
-        .instruction-banner {
-            background-color: #e3f2fd;
-            border: 1px solid #90caf9;
-            color: #0d47a1;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-        .instruction-banner strong {
-            font-size: 16px;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        /* ソース編集モーダル */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .modal-overlay.open { display: flex; }
-        .modal-content {
-            background: #fff;
-            padding: 20px;
-            width: 80%;
-            max-width: 600px;
-            height: 70%;
-            display: flex;
-            flex-direction: column;
-            border-radius: 8px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-        }
-        .modal-header { font-weight: bold; margin-bottom: 10px; font-size: 18px; }
-        #htmlSourceInput {
-            flex: 1;
-            font-family: monospace;
-            padding: 10px;
-            border: 1px solid #ccc;
-            resize: none;
-            margin-bottom: 10px;
-        }
-
-        /* =========================================
-         * ルビ編集ポップアップ（新規追加）
-         * =========================================
-         */
-        #ruby-popup {
-            position: fixed;
-            display: none;
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-            padding: 12px 16px;
-            z-index: 2000;
-            min-width: 220px;
-            font-size: 14px;
-        }
-        #ruby-popup.visible { display: block; }
-        #ruby-popup .popup-title {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 8px;
-        }
-        #ruby-popup .popup-kanji {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-align: center;
-            color: var(--primary-color);
-        }
-        #ruby-popup input[type="text"] {
-            width: 100%;
-            padding: 6px 8px;
-            border: 1px solid #bbb;
-            border-radius: 4px;
-            font-size: 15px;
-            box-sizing: border-box;
-            margin-bottom: 10px;
-            font-family: inherit;
-        }
-        #ruby-popup input[type="text"]:focus {
-            outline: 2px solid var(--primary-color);
-            border-color: var(--primary-color);
-        }
-        #ruby-popup .popup-btns {
-            display: flex;
-            gap: 8px;
-        }
-        #ruby-popup .popup-btns button {
-            flex: 1;
-            padding: 6px;
-            font-size: 13px;
-        }
-        #ruby-popup .btn-delete {
-            background: #fff3f3;
-            border-color: #e57373;
-            color: #c62828;
-        }
-        #ruby-popup .btn-delete:hover {
-            background: #ffebee;
-        }
-
-        /* ruby要素にカーソルを示すスタイル */
-        #paper-container ruby {
-            cursor: pointer;
-            border-radius: 2px;
-            transition: background 0.15s;
-        }
-        #paper-container ruby:hover {
-            background: rgba(0, 102, 204, 0.08);
-        }
-        #paper-container ruby.ruby-editing {
-            background: rgba(0, 102, 204, 0.15);
-            outline: 1px dashed var(--primary-color);
-        }
-
-        /* * =========================================
-         * 印刷設定
-         * =========================================
-         */
         @media print {
-            .sidebar, .gear-btn, .no-print, .instruction-banner, #ruby-popup {
-                display: none !important;
+            body * { visibility: hidden; }
+            #preview-container, #preview-container * { visibility: visible; }
+            #preview-container {
+                position: absolute;
+                left: 0; top: 0; width: 100%; margin: 0; padding: 0;
+                box-shadow: none; background: white;
             }
-            body, .main-area {
-                background: none;
-                height: auto;
-                overflow: visible;
-                display: block;
-                padding: 0;
-                margin: 0;
-            }
-            #paper-container {
-                box-shadow: none;
-                width: 100%;
-                margin: 0;
-                padding: 0;
-                border: none !important;
-            }
-            body.hide-ruby rt { display: none; }
+            .page-hp { box-shadow: none !important; margin: 0 !important; width: 100% !important; height: auto !important; }
+            .page-a4 { box-shadow: none !important; margin: 0 !important; width: 100% !important; height: auto !important; }
+            ruby { ruby-position: over; }
         }
 
-        /* * =========================================
-         * ドキュメント内部スタイル
-         * =========================================
-         */
-        [contenteditable]:focus { outline: none; }
-        
-        #paper-container *:focus {
-            outline: 2px dashed rgba(0, 102, 204, 0.3);
-            background-color: rgba(0, 102, 204, 0.02);
+        .preview-content {
+            font-family: "BIZ UDPGothic", "BIZ UDGothic", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Meiryo", "Yu Gothic", sans-serif;
+            line-height: 2.0;
+            overflow-wrap: break-word;
+            font-size: 12pt;
         }
 
-        body.hide-ruby rt { display: none; }
-        .font-mincho { font-family: "BIZ UDMincho", serif !important; }
-        .font-gothic { font-family: "BIZ UDPGothic", sans-serif !important; }
+        .page-hp { width: 100%; padding: 2rem; background: white; min-height: 100%; }
+        .page-a4 {
+            width: 210mm; min-height: 297mm; padding: 20mm; margin: 0 auto;
+            background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); box-sizing: border-box;
+        }
 
-        .doc-title { text-align: center; font-size: 24px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .situation-box { background-color: #f9f9f9; padding: 15px; border: 1px solid #000; margin-bottom: 20px; }
-        .doc-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-        .doc-table th, .doc-table td { border: 1px solid #000; padding: 8px 12px; text-align: center; }
-        .doc-table th { background-color: #eee; }
-        .question-box { margin-bottom: 25px; }
-        .question-title { font-weight: bold; margin-bottom: 10px; }
-        .answer-space { border-bottom: 1px dotted #000; display: inline-block; min-width: 200px; height: 1.5em; vertical-align: bottom; }
-        .clock-grid { display: flex; justify-content: space-around; flex-wrap: wrap; margin-top: 15px; }
-        .clock-item { text-align: center; margin: 10px; }
-        canvas { display: block; margin-bottom: 5px; border: 1px solid #eee; background: white; }
-        .options { list-style: none; padding: 0; }
-        .options li { margin-bottom: 8px; }
-        rt { color: #555; }
+        .ruby-edit-mode ruby {
+            display: inline-ruby;
+            position: relative;
+            cursor: pointer;
+            border-radius: 4px;
+            border-bottom: 1px dotted #ccc;
+        }
+        .ruby-edit-mode ruby:hover { background-color: #e0f2fe; }
+        .ruby-edit-mode ruby.editing-active {
+            background-color: #fce7f3; outline: 2px solid #ec4899; z-index: 10;
+        }
+        rt { display: ruby-text; font-size: 0.5em; line-height: 1; text-align: center; color: #555; user-select: none; }
+
+        /* 画像のデフォルトスタイル */
+        #preview-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1rem auto;
+        }
+
+        #preview-container table { border-collapse: collapse; margin: 0.5em 0; }
+        #preview-container th, #preview-container td { border: 1px solid #999; padding: 4px 8px; }
+        #preview-container th { background: #f3f4f6; font-weight: bold; }
+
+        #web-iframe { width: 100%; height: 100%; border: none; background: white; }
+        #html-editor { font-family: monospace; white-space: pre-wrap; }
+
+        .mode-btn { padding: 4px 14px; border-radius: 9999px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.15s; }
+        .mode-btn.active { background: #3b82f6; color: white; }
+        .mode-btn:not(.active) { background: #e5e7eb; color: #374151; }
+        .mode-btn:not(.active):hover { background: #d1d5db; }
+
+        .text-edit-mode { cursor: text; outline: none; }
+        .text-edit-mode:focus { outline: none; }
+        .text-edit-mode ruby { cursor: text !important; border-bottom: none !important; }
+        .text-edit-mode ruby:hover { background-color: transparent !important; }
+
+        #edit-mode-indicator {
+            display: inline-flex; align-items: center; gap: 4px; font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 9999px; transition: all 0.2s;
+        }
+        #edit-mode-indicator.mode-ruby { background: #dcfce7; color: #16a34a; }
+        #edit-mode-indicator.mode-text { background: #fef9c3; color: #a16207; }
+
+        /* 画像選択時のスタイル */
+        img.img-editing { outline: 3px solid #3b82f6; }
     </style>
 </head>
-<body class="font-gothic">
+<body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
 
-    <!-- サイドバー -->
-    <div class="sidebar">
-        <div class="logo">プリントエディタ</div>
+<header class="bg-white shadow-sm z-10 p-3 flex justify-between items-center shrink-0">
+    <h1 class="text-xl font-bold text-gray-700">ルビふりお2 <span class="text-xs font-normal text-blue-500">画像対応</span></h1>
+    <div class="flex gap-2">
+        <button onclick="openInNewTab()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-sm transition">
+            <i class="fas fa-external-link-alt mr-1"></i> 新しいタブ
+        </button>
+        <button onclick="copyHtml()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm transition">
+            <i class="fas fa-code mr-1"></i> HTMLコピー
+        </button>
+        <button onclick="window.print()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-1.5 rounded text-sm transition">
+            <i class="fas fa-print mr-1"></i> 印刷
+        </button>
+    </div>
+</header>
 
-        <!-- データ操作 -->
-        <div class="tool-group">
-            <div class="tool-label">データ入力</div>
-            <button onclick="openSourceModal()" title="HTMLタグを直接貼り付けられます">
-                📄 HTMLソースを貼付/編集
-            </button>
+<div class="bg-white border-b border-gray-200 p-2 flex flex-wrap gap-3 items-center shrink-0 text-sm">
+    <div class="flex items-center border-r pr-3 gap-2">
+        <span class="text-gray-500 text-xs font-bold uppercase">レイアウト</span>
+        <select id="layout-select" onchange="changeLayout()" class="border border-gray-300 rounded p-1">
+            <option value="hp">HP用 (Web)</option>
+            <option value="a4">A4印刷用</option>
+        </select>
+    </div>
+
+    <div class="flex items-center border-r pr-3 gap-2">
+        <span class="text-gray-500 text-xs font-bold uppercase">全体サイズ</span>
+        <div class="flex items-center">
+            <input type="number" id="base-font-size" value="12" min="6" max="72" class="w-14 border border-gray-300 rounded p-1 text-center" onchange="updateBaseFontSize()">
+            <span class="ml-1 text-gray-600 text-xs">pt</span>
         </div>
+    </div>
 
-        <!-- フォント設定 -->
-        <div class="tool-group">
-            <div class="tool-label">文字の設定</div>
-            <div class="control-row">
-                <button onmousedown="event.preventDefault(); toggleFont('gothic')" id="btn-gothic" class="active">ゴシック</button>
-                <button onmousedown="event.preventDefault(); toggleFont('mincho')" id="btn-mincho">明朝体</button>
-            </div>
-            <div class="control-row" style="margin-top:5px;">
-                <button onmousedown="event.preventDefault(); execCmd('bold')" title="太字"><b>B</b></button>
-                <input type="number" id="fontSizeInput" value="16" min="8" max="72" title="文字サイズ">
-                <span style="font-size:12px;">px</span>
-            </div>
+    <div class="flex items-center border-r pr-3 gap-1">
+        <select id="font-family-select" onchange="wrapFontFamily(this.value); this.value='';" class="border border-gray-300 rounded p-1 w-24 mr-1 text-xs">
+            <option value="" disabled selected>フォント</option>
+            <option value="">デフォルト</option>
+            <option value="'UD Digi Kyokasho', 'YuKyokasho', 'Kaisho', serif">教科書体</option>
+            <option value="'HiraMinProN-W3', 'YuMincho', serif">明朝体</option>
+            <option value="'Hiragino Kaku Gothic ProN', sans-serif">ゴシック</option>
+        </select>
+        <button onmousedown="event.preventDefault()" onclick="wrapSelection('b')" class="p-1.5 hover:bg-gray-100 rounded" title="太字"><i class="fas fa-bold"></i></button>
+        <button onmousedown="event.preventDefault()" onclick="wrapColor('red')" class="p-1.5 hover:bg-gray-100 rounded text-red-500" title="赤文字"><i class="fas fa-font"></i></button>
+        <!-- 画像挿入ボタン -->
+        <button onmousedown="event.preventDefault()" onclick="openImageModal()" class="p-1.5 hover:bg-blue-50 text-blue-600 rounded border border-transparent hover:border-blue-200" title="画像挿入"><i class="fas fa-image"></i></button>
+    </div>
+
+    <div class="flex items-center border border-gray-300 rounded px-1 ml-1 bg-gray-50" id="partial-fontsize-box">
+        <span class="text-[10px] text-gray-500 mr-1 font-bold">選択文字</span>
+        <input type="number" id="sel-font-size" value="16" class="w-10 p-0.5 text-center text-xs border-none bg-transparent focus:ring-0 outline-none">
+        <span class="text-[10px] text-gray-500 mr-1">pt</span>
+        <button onmousedown="event.preventDefault()" onclick="applyPartialFontSize()" class="ml-1 text-xs text-gray-600 hover:text-blue-500 px-1"><i class="fas fa-check"></i></button>
+    </div>
+
+    <div class="flex items-center gap-2 ml-auto">
+        <a href="https://gemini.google.com/gem/1aQXlT177ks4j2LLC5ooZCyZV3xKGBIlx?usp=sharing" target="_blank" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-100 transition shadow-sm">
+            <i class="fas fa-external-link-alt mr-2"></i> ルビGem
+        </a>
+    </div>
+</div>
+
+<div class="flex flex-1 overflow-hidden">
+    <!-- エディタ -->
+    <div class="w-1/2 flex flex-col border-r border-gray-300 bg-gray-50">
+        <div class="p-2 bg-gray-100 border-b text-xs font-bold text-gray-500 flex justify-between items-center">
+            <span>HTMLソース入力</span>
+            <span class="text-[10px] bg-gray-200 px-2 py-0.5 rounded text-gray-400">Ctrl+Vで画像貼り付け可</span>
         </div>
+        <textarea id="html-editor" 
+            class="flex-1 w-full p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 text-gray-800 text-sm leading-relaxed font-mono"
+            placeholder="<!-- HTMLを貼り付けるか画像を挿入してください -->"
+            oninput="updatePreview()"></textarea>
+    </div>
 
-        <!-- ルビ設定 -->
-        <div class="tool-group">
-            <div class="tool-label">振り仮名（ルビ）</div>
-            <div class="control-row">
-                <button onmousedown="event.preventDefault(); setRuby()" style="flex:1;" title="選択した文字にルビを振ります">
-                    あ ルビを振る
+    <!-- プレビュー -->
+    <div class="w-1/2 flex flex-col bg-gray-200 overflow-hidden" id="preview-scroller">
+        <div class="p-2 bg-gray-200/90 backdrop-blur border-b border-gray-300 flex justify-between items-center text-xs font-bold text-gray-500 shrink-0">
+            <div class="flex items-center gap-2">
+                <button id="btn-mode-ruby" class="mode-btn active" onclick="setPreviewMode('ruby')">
+                    <i class="fas fa-pen mr-1"></i>ルビ・画像編集
                 </button>
-            </div>
-            <div style="font-size:10px; color:#666; margin-top:2px;">※文字を選択してから押してください</div>
-            <div style="font-size:10px; color:#0066cc; margin-top:4px; line-height:1.4;">
-                💡 既存のルビはクリックで編集できます
-            </div>
-            <div style="margin-top:10px;">
-                <button onmousedown="event.preventDefault(); toggleRuby()" id="btn-ruby" class="active" style="width:100%;">
-                    一括表示 / 非表示
+                <button id="btn-mode-web" class="mode-btn" onclick="setPreviewMode('web')">
+                    <i class="fas fa-globe mr-1"></i>Web
                 </button>
+                <div class="ml-2 flex items-center gap-1 border-l pl-2">
+                    <span id="edit-mode-indicator" class="mode-ruby">
+                        <i class="fas fa-circle text-[6px]"></i> ルビ修正モード
+                    </span>
+                    <button id="btn-edit-toggle" onclick="toggleEditMode()" class="text-[10px] bg-white border border-gray-300 hover:bg-yellow-50 px-2 py-0.5 rounded transition">
+                        切替
+                    </button>
+                </div>
             </div>
+            <span id="preview-hint" class="text-gray-400">クリックでルビ・画像修正</span>
         </div>
 
-        <!-- 表示・印刷 -->
-        <div class="tool-group" style="margin-top: auto; border:none;">
-            <div class="tool-label">出力・表示</div>
-            <button onclick="toggleWebMode()">🌐 Webサイトとして表示</button>
-            <button onclick="window.print()" class="primary-btn">🖨 印刷する</button>
-        </div>
-    </div>
-
-    <!-- Webモード解除ボタン（歯車：左下） -->
-    <div class="gear-btn" onclick="toggleWebMode()" title="編集モードに戻る">⚙</div>
-
-    <!-- ソース編集モーダル -->
-    <div class="modal-overlay" id="sourceModal">
-        <div class="modal-content">
-            <div class="modal-header">HTMLソースの編集</div>
-            <div style="font-size:12px; color:#666; margin-bottom:5px;">
-                ここに元のHTMLコードを貼り付けて「反映する」を押してください。
-            </div>
-            <textarea id="htmlSourceInput" placeholder="<html>...</html>"></textarea>
-            <div style="display:flex; justify-content:flex-end; gap:10px;">
-                <button onclick="closeSourceModal()">キャンセル</button>
-                <button onclick="applySource()" class="primary-btn">反映する</button>
-            </div>
+        <div class="flex justify-center p-4 min-h-0 flex-1 overflow-y-auto" id="preview-scroll-inner">
+            <div id="preview-container" class="page-hp preview-content ruby-edit-mode" spellcheck="false"></div>
+            <iframe id="web-iframe" class="hidden" sandbox="allow-same-origin allow-scripts"></iframe>
         </div>
     </div>
+</div>
 
-    <!-- ルビ編集ポップアップ（新規追加） -->
-    <div id="ruby-popup">
-        <div class="popup-title">ルビの編集</div>
-        <div class="popup-kanji" id="popup-kanji-text"></div>
-        <input type="text" id="popup-ruby-input" placeholder="読み仮名を入力">
-        <div class="popup-btns">
-            <button class="btn-delete" onclick="deleteRuby()">🗑 ルビを削除</button>
-            <button class="primary-btn" onclick="applyRubyEdit()">✔ 変更する</button>
+<!-- ルビ編集モーダル -->
+<div id="ruby-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-96 shadow-xl relative">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg text-gray-700">ルビ修正</h3>
+        </div>
+        <div class="flex gap-4 mb-6 items-end">
+            <div class="flex-1 text-center">
+                <label class="block text-xs text-gray-400 mb-1">漢字</label>
+                <div id="modal-kanji-display" class="text-2xl font-bold bg-gray-100 p-2 rounded"></div>
+            </div>
+            <div class="flex-1">
+                <label class="block text-xs text-blue-500 font-bold mb-1">ふりがな</label>
+                <input type="text" id="modal-ruby" class="w-full text-xl border-b-2 border-blue-500 p-2 focus:outline-none bg-transparent text-center" autocomplete="off">
+            </div>
+        </div>
+        <div class="flex justify-between gap-2 mb-4">
+            <button onclick="navigateRuby(-1)" class="flex-1 py-1 px-2 text-sm bg-gray-100 hover:bg-gray-200 rounded">前へ</button>
+            <button onclick="navigateRuby(1)" class="flex-1 py-1 px-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded font-bold">保存して次へ</button>
+        </div>
+        <div class="flex justify-end pt-4 border-t gap-3">
+            <button onclick="closeRubyModal()" class="text-gray-400 text-sm">閉じる</button>
+            <button onclick="removeRubyTag()" class="text-red-400 text-sm">解除</button>
         </div>
     </div>
+</div>
 
-    <!-- メインエリア -->
-    <div class="main-area">
-        <!-- 編集用紙 (A4) -->
-        <div id="paper-container" contenteditable="true">
-            
-            <!-- 使い方ガイド -->
-            <div class="instruction-banner no-print" contenteditable="false">
-                <strong>【ここにHTMLを読み込む・編集する】</strong>
-                現在表示されているのはサンプルです。<br>
-                ・文章や表の中身は、この画面で直接クリックして書き換えられます。<br>
-                ・既存のルビ（振り仮名）は<strong>クリックするだけで編集・削除</strong>できます。<br>
-                ・ルビを新しく付けたい場合は、文字を選択してから左の「ルビを振る」ボタンを使ってください。
+<!-- 画像設定モーダル -->
+<div id="image-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[60]">
+    <div class="bg-white rounded-lg p-6 w-[450px] shadow-xl relative">
+        <h3 class="font-bold text-lg text-gray-700 mb-4"><i class="fas fa-image mr-2 text-blue-500"></i>画像の設定</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1">画像URL / Googleドライブ共有URL</label>
+                <input type="text" id="img-url" class="w-full border border-gray-300 rounded p-2 text-sm" placeholder="https://...">
+                <p class="text-[10px] text-gray-400 mt-1">※Googleドライブの共有リンクは自動で表示用URLに変換されます</p>
             </div>
-
-            <!-- ▼▼▼ コンテンツ開始 ▼▼▼ -->
-            <div id="editable-content">
-                <h1 class="doc-title"><ruby>実<rt>じつ</rt></ruby><ruby>用<rt>よう</rt></ruby><ruby>的<rt>てき</rt></ruby><ruby>読<rt>ど</rt></ruby><ruby>解<rt>かい</rt></ruby>・<ruby>計<rt>けい</rt></ruby><ruby>算<rt>さん</rt></ruby>プリント：<ruby>修<rt>しゅう</rt></ruby><ruby>学<rt>がく</rt></ruby><ruby>旅<rt>りょ</rt></ruby><ruby>行<rt>こう</rt></ruby>の<ruby>計<rt>けい</rt></ruby><ruby>画<rt>かく</rt></ruby></h1>
-
-                <div class="situation-box">
-                    <strong>【シチュエーション】</strong><br>
-                    あなたは<ruby>来<rt>らい</rt></ruby><ruby>週<rt>しゅう</rt></ruby>、<ruby>京<rt>きょう</rt></ruby><ruby>都<rt>と</rt></ruby>へ<ruby>修<rt>しゅう</rt></ruby><ruby>学<rt>がく</rt></ruby><ruby>旅<rt>りょ</rt></ruby><ruby>行<rt>こう</rt></ruby>に<ruby>行<rt>い</rt></ruby>きます。これは、あなたの<ruby>班<rt>はん</rt></ruby>が<ruby>作成<rt>さくせい</rt></ruby>した２<ruby>日<rt>にち</rt></ruby><ruby>目<rt>め</rt></ruby>の<ruby>班<rt>はん</rt></ruby><ruby>別<rt>べつ</rt></ruby><ruby>活<rt>かつ</rt></ruby><ruby>動<rt>どう</rt></ruby>のスケジュール<ruby>表<rt>ひょう</rt></ruby>です。この<ruby>表<rt>ひょう</rt></ruby>をよく<ruby>読<rt>よ</rt></ruby>んで、あとの<ruby>問<rt>と</rt></ruby>いに<ruby>答<rt>こた</rt></ruby>えなさい。
+            <div class="flex gap-4">
+                <div class="flex-1">
+                    <label class="block text-xs font-bold text-gray-500 mb-1">幅 (px または %)</label>
+                    <input type="text" id="img-width" class="w-full border border-gray-300 rounded p-2 text-sm" placeholder="例: 400px または 100%">
                 </div>
-
-                <table class="doc-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 15%;"><ruby>時刻<rt>じこく</rt></ruby></th>
-                            <th style="width: 40%;"><ruby>行<rt>い</rt></ruby>く<ruby>場所<rt>ばしょ</rt></ruby>・すること</th>
-                            <th><ruby>交通<rt>こうつう</rt></ruby><ruby>手段<rt>しゅだん</rt></ruby>や<ruby>注意点<rt>ちゅういてん</rt></ruby></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>8:30</td>
-                            <td><ruby>宿<rt>しゅく</rt></ruby><ruby>泊<rt>はく</rt></ruby>ホテル<ruby>出発<rt>しゅっぱつ</rt></ruby></td>
-                            <td>※<ruby>地図<rt>ちず</rt></ruby>とカメラを<ruby>忘<rt>わす</rt></ruby>れない</td>
-                        </tr>
-                        <tr>
-                            <td>9:10</td>
-                            <td><ruby>金<rt>きん</rt></ruby><ruby>閣<rt>かく</rt></ruby><ruby>寺<rt>じ</rt></ruby>（<ruby>鹿<rt>ろく</rt></ruby><ruby>苑<rt>おん</rt></ruby><ruby>寺<rt>じ</rt></ruby>）</td>
-                            <td>『<ruby>市<rt>し</rt></ruby>バス』を<ruby>利用<rt>りよう</rt></ruby></td>
-                        </tr>
-                        <tr>
-                            <td>11:00</td>
-                            <td><ruby>嵐<rt>あらし</rt></ruby><ruby>山<rt>やま</rt></ruby>・<ruby>渡<rt>わた</rt></ruby><ruby>月<rt>げつ</rt></ruby><ruby>橋<rt>きょう</rt></ruby></td>
-                            <td>『<ruby>京<rt>けい</rt></ruby><ruby>福<rt>ふく</rt></ruby><ruby>電<rt>でん</rt></ruby><ruby>鉄<rt>てつ</rt></ruby>（<ruby>嵐<rt>らん</rt></ruby><ruby>電<rt>でん</rt></ruby>）』</td>
-                        </tr>
-                        <tr>
-                            <td>12:30</td>
-                            <td><ruby>昼食<rt>ちゅうしょく</rt></ruby>（お<ruby>店<rt>みせ</rt></ruby>：みやこ）</td>
-                            <td>※12:30に<ruby>予約<rt>よやく</rt></ruby>ずみ</td>
-                        </tr>
-                        <tr>
-                            <td>14:30</td>
-                            <td><ruby>清<rt>きよ</rt></ruby><ruby>水<rt>みず</rt></ruby><ruby>寺<rt>でら</rt></ruby></td>
-                            <td>『タクシー』を<ruby>利用<rt>りよう</rt></ruby></td>
-                        </tr>
-                        <tr>
-                            <td>17:00</td>
-                            <td><ruby>宿<rt>しゅく</rt></ruby><ruby>泊<rt>はく</rt></ruby>ホテル<ruby>帰着<rt>きちゃく</rt></ruby></td>
-                            <td>※<ruby>夕<rt>ゆう</rt></ruby><ruby>食<rt>しょく</rt></ruby>は18:00から</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>1】 <ruby>宿<rt>しゅく</rt></ruby><ruby>泊<rt>はく</rt></ruby>ホテルを<ruby>出発<rt>しゅっぱつ</rt></ruby>するときに、<ruby>必<rt>かなら</rt></ruby>ず<ruby>持<rt>も</rt></ruby>っていくように<ruby>書<rt>か</rt></ruby>かれている「<ruby>持<rt>も</rt></ruby>ち<ruby>物<rt>もの</rt></ruby>」を２つ<ruby>答<rt>こた</rt></ruby>えなさい。
-                    </div>
-                    <div>
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space"></span>
-                    </div>
-                </div>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>2】 <ruby>嵐<rt>あらし</rt></ruby><ruby>山<rt>やま</rt></ruby>に<ruby>到着<rt>とうちゃく</rt></ruby>してから、<ruby>昼食<rt>ちゅうしょく</rt></ruby>のお<ruby>店<rt>みせ</rt></ruby>に<ruby>行<rt>い</rt></ruby>くまでの「<ruby>自由<rt>じゆう</rt></ruby><ruby>時間<rt>じかん</rt></ruby>」は、<ruby>何<rt>なん</rt></ruby><ruby>分<rt>ぷん</rt></ruby><ruby>間<rt>かん</rt></ruby>ありますか。
-                    </div>
-                    <div>
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space"></span><ruby>分<rt>ぷん</rt></ruby><ruby>間<rt>かん</rt></ruby>
-                    </div>
-                </div>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>3】 <ruby>最後<rt>さいご</rt></ruby>の<ruby>見学<rt>けんがく</rt></ruby><ruby>場所<rt>ばしょ</rt></ruby>である「<ruby>清<rt>きよ</rt></ruby><ruby>水<rt>みず</rt></ruby><ruby>寺<rt>でら</rt></ruby>」に<ruby>到着<rt>とうちゃく</rt></ruby>する<ruby>予定<rt>よてい</rt></ruby><ruby>時刻<rt>じこく</rt></ruby>を<ruby>表<rt>あらわ</rt></ruby>している<ruby>時計<rt>とけい</rt></ruby>を、<ruby>次<rt>つぎ</rt></ruby>のア～エから１つ<ruby>選<rt>えら</rt></ruby>んで、<ruby>記号<rt>きごう</rt></ruby>で<ruby>答<rt>こた</rt></ruby>えなさい。
-                    </div>
-                    <div class="clock-grid">
-                        <div class="clock-item">
-                            <canvas id="clockA" width="100" height="100"></canvas>
-                            ア
-                        </div>
-                        <div class="clock-item">
-                            <canvas id="clockB" width="100" height="100"></canvas>
-                            イ
-                        </div>
-                        <div class="clock-item">
-                            <canvas id="clockC" width="100" height="100"></canvas>
-                            ウ
-                        </div>
-                        <div class="clock-item">
-                            <canvas id="clockD" width="100" height="100"></canvas>
-                            エ
-                        </div>
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space" style="min-width: 50px;"></span>
-                    </div>
-                </div>
-
-                <div class="question-box">
-                    <div class="question-title">
-                        【<ruby>問<rt>とい</rt></ruby>4】 <ruby>計画<rt>けいかく</rt></ruby><ruby>中<rt>ちゅう</rt></ruby>に「<ruby>市<rt>し</rt></ruby>バス」を<ruby>利用<rt>りよう</rt></ruby>する<ruby>場面<rt>ばめん</rt></ruby>がありますが、バスの<ruby>中<rt>なか</rt></ruby>での<ruby>行動<rt>こうどう</rt></ruby>として「もっともふさわしいもの」を１つ<ruby>選<rt>えら</rt></ruby>びなさい。
-                    </div>
-                    <ul class="options">
-                        <li>ア：<ruby>次<rt>つぎ</rt></ruby>の<ruby>目的地<rt>もくてきち</rt></ruby>を<ruby>確認<rt>かくにん</rt></ruby>するため、<ruby>大<rt>おお</rt></ruby>きな<ruby>声<rt>こえ</rt></ruby>で<ruby>相談<rt>そうだん</rt></ruby>する。</li>
-                        <li>イ：お<ruby>腹<rt>なか</rt></ruby>がすいたので、<ruby>友達<rt>ともだち</rt></ruby>とお<ruby>菓子<rt>かし</rt></ruby>を<ruby>分<rt>わ</rt></ruby>け<ruby>合<rt>あ</rt></ruby>って<ruby>食<rt>た</rt></ruby>べる。</li>
-                        <li>ウ：リュックサックを<ruby>背負<rt>せお</rt></ruby>ったままだと<ruby>他<rt>ほか</rt></ruby>の<ruby>客<rt>きゃく</rt></ruby>の<ruby>邪魔<rt>じゃま</rt></ruby>になるので、<ruby>前<rt>まえ</rt></ruby>に<ruby>抱<rt>かか</rt></ruby>えたり<ruby>網棚<rt>あみだな</rt></ruby>に<ruby>置<rt>お</rt></ruby>いたりする。</li>
-                        <li>エ：<ruby>降<rt>お</rt></ruby>りる<ruby>停留所<rt>ていりゅうじょ</rt></ruby>に<ruby>着<rt>つ</rt></ruby>く<ruby>前<rt>まえ</rt></ruby>に、<ruby>急<rt>いそ</rt></ruby>いでバスの<ruby>出口<rt>でぐち</rt></ruby>まで<ruby>走<rt>はし</rt></ruby>って<ruby>移動<rt>いどう</rt></ruby>する。</li>
-                    </ul>
-                    <div>
-                        <ruby>答<rt>こた</rt></ruby>え：<span class="answer-space" style="min-width: 50px;"></span>
-                    </div>
+                <div class="flex-1">
+                    <label class="block text-xs font-bold text-gray-500 mb-1">説明 (alt)</label>
+                    <input type="text" id="img-alt" class="w-full border border-gray-300 rounded p-2 text-sm" placeholder="画像の説明">
                 </div>
             </div>
-            <!-- ▲▲▲ コンテンツ終了 ▲▲▲ -->
-
+        </div>
+        <div class="flex justify-end mt-6 gap-2">
+            <button onclick="closeImageModal()" class="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded">キャンセル</button>
+            <button id="img-delete-btn" onclick="deleteCurrentImage()" class="hidden px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded">削除</button>
+            <button onclick="insertOrUpdateImage()" class="px-4 py-2 text-sm bg-blue-500 text-white rounded font-bold hover:bg-blue-600">決定</button>
         </div>
     </div>
+</div>
 
 <script>
-    /**
-     * アプリケーションロジック
-     */
+    const editor = document.getElementById('html-editor');
+    const preview = document.getElementById('preview-container');
+    const baseFontSizeInput = document.getElementById('base-font-size');
+    const selFontSizeInput = document.getElementById('sel-font-size');
+    const webIframe = document.getElementById('web-iframe');
+    const previewHint = document.getElementById('preview-hint');
+    const editModeIndicator = document.getElementById('edit-mode-indicator');
 
-    const paper = document.getElementById('paper-container');
-    let savedRange = null;
+    let currentTargetRuby = null;
+    let currentTargetImg = null;
+    let lastRange = null;
+    let currentMode = 'ruby'; 
+    let editMode = 'ruby';
 
-    // =========================================
-    // ルビ編集ポップアップ関連
-    // =========================================
-    const rubyPopup = document.getElementById('ruby-popup');
-    const popupKanjiText = document.getElementById('popup-kanji-text');
-    const popupRubyInput = document.getElementById('popup-ruby-input');
-    let currentRubyEl = null; // 現在編集中の<ruby>要素
+    window.addEventListener('DOMContentLoaded', () => {
+        updateBaseFontSize();
+        updatePreview();
+    });
 
-    /**
-     * <ruby>要素のクリックイベントを用紙全体で捕捉（イベントデリゲーション）
-     * contenteditable内でのクリックは、通常カーソル移動として扱われるため
-     * mousedownで preventDefault してクリック判定する。
-     */
-    paper.addEventListener('mousedown', function(e) {
-        // クリックされた要素またはその祖先が<ruby>か判定
-        const rubyEl = e.target.closest('ruby');
-        if (rubyEl && paper.contains(rubyEl)) {
-            // ポップアップが既に開いていて同じ要素をクリックした場合は閉じる
-            if (currentRubyEl === rubyEl && rubyPopup.classList.contains('visible')) {
-                closeRubyPopup();
-                return;
-            }
-            e.preventDefault(); // カーソルがruby内に移動するのを防ぐ
-            openRubyPopup(rubyEl, e);
+    // =====================
+    // 画像URL変換 (Googleドライブ対応)
+    // =====================
+    function convertDriveUrl(url) {
+        if (!url) return "";
+        // Googleドライブの共有リンク ( /file/d/ID/view )
+        const driveRegex = /\/file\/d\/([^\/]+)\//;
+        const match = url.match(driveRegex);
+        if (match && match[1]) {
+            return `https://lh3.googleusercontent.com/d/${match[1]}`;
+        }
+        return url;
+    }
+
+    // =====================
+    // 画像モーダル処理
+    // =====================
+    function openImageModal(imgElement = null) {
+        const modal = document.getElementById('image-modal');
+        const urlInput = document.getElementById('img-url');
+        const widthInput = document.getElementById('img-width');
+        const altInput = document.getElementById('img-alt');
+        const deleteBtn = document.getElementById('img-delete-btn');
+
+        if (imgElement) {
+            currentTargetImg = imgElement;
+            urlInput.value = imgElement.src;
+            widthInput.value = imgElement.style.width || imgElement.width || "";
+            altInput.value = imgElement.alt || "";
+            deleteBtn.classList.remove('hidden');
         } else {
-            // ruby以外をクリックしたらポップアップを閉じる
-            closeRubyPopup();
-        }
-    });
-
-    function openRubyPopup(rubyEl, e) {
-        // 前の編集中ハイライトを解除
-        if (currentRubyEl) currentRubyEl.classList.remove('ruby-editing');
-
-        currentRubyEl = rubyEl;
-        currentRubyEl.classList.add('ruby-editing');
-
-        // 漢字テキスト（<rt>以外のテキスト）を取得
-        const kanjiText = getKanjiText(rubyEl);
-        // 現在のルビ（<rt>の内容）を取得
-        const rtEl = rubyEl.querySelector('rt');
-        const currentRuby = rtEl ? rtEl.textContent : '';
-
-        popupKanjiText.textContent = kanjiText;
-        popupRubyInput.value = currentRuby;
-
-        // ポップアップの位置を計算（クリック位置の近く、画面からはみ出さないよう調整）
-        rubyPopup.classList.add('visible');
-        const rect = rubyEl.getBoundingClientRect();
-        const popupRect = rubyPopup.getBoundingClientRect();
-
-        let top = rect.bottom + window.scrollY + 6;
-        let left = rect.left + window.scrollX;
-
-        // 画面右端からはみ出す場合は左寄せ調整
-        if (left + 220 > window.innerWidth) {
-            left = window.innerWidth - 230;
-        }
-        // 画面下端からはみ出す場合は上に表示
-        if (top + 130 > window.innerHeight + window.scrollY) {
-            top = rect.top + window.scrollY - 130;
+            currentTargetImg = null;
+            urlInput.value = "";
+            widthInput.value = "";
+            altInput.value = "";
+            deleteBtn.classList.add('hidden');
         }
 
-        rubyPopup.style.top = top + 'px';
-        rubyPopup.style.left = left + 'px';
-
-        // inputにフォーカス（少し遅延を入れないとブラウザによって動作しない）
-        setTimeout(() => popupRubyInput.focus(), 50);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        urlInput.focus();
     }
 
-    function closeRubyPopup() {
-        if (currentRubyEl) {
-            currentRubyEl.classList.remove('ruby-editing');
-            currentRubyEl = null;
+    function closeImageModal() {
+        document.getElementById('image-modal').classList.add('hidden');
+        document.getElementById('image-modal').classList.remove('flex');
+        if (currentTargetImg) {
+            currentTargetImg.classList.remove('img-editing');
+            currentTargetImg = null;
         }
-        rubyPopup.classList.remove('visible');
     }
 
-    // <ruby>要素から漢字テキスト（<rt>を除く）を取得
-    function getKanjiText(rubyEl) {
-        let text = '';
-        rubyEl.childNodes.forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE) {
-                text += node.textContent;
-            } else if (node.tagName && node.tagName.toLowerCase() !== 'rt') {
-                text += node.textContent;
-            }
-        });
-        return text;
-    }
+    function insertOrUpdateImage() {
+        const url = convertDriveUrl(document.getElementById('img-url').value);
+        const width = document.getElementById('img-width').value;
+        const alt = document.getElementById('img-alt').value;
 
-    // ルビの変更を適用
-    function applyRubyEdit() {
-        if (!currentRubyEl) return;
-        const newRuby = popupRubyInput.value.trim();
-        const rtEl = currentRubyEl.querySelector('rt');
-        if (rtEl) {
-            rtEl.textContent = newRuby;
+        if (!url) return alert("URLを入力してください");
+
+        if (currentTargetImg) {
+            // 更新
+            currentTargetImg.src = url;
+            currentTargetImg.alt = alt;
+            if (width) currentTargetImg.style.width = width;
+            else currentTargetImg.style.width = "";
         } else {
-            // <rt>がなければ作成
-            const newRt = document.createElement('rt');
-            newRt.textContent = newRuby;
-            currentRubyEl.appendChild(newRt);
-        }
-        closeRubyPopup();
-    }
-
-    // ルビを削除（<ruby>タグをテキストに戻す）
-    function deleteRuby() {
-        if (!currentRubyEl) return;
-        const kanjiText = getKanjiText(currentRubyEl);
-        const textNode = document.createTextNode(kanjiText);
-        currentRubyEl.parentNode.replaceChild(textNode, currentRubyEl);
-        closeRubyPopup();
-    }
-
-    // Enterキーで確定、Escapeで閉じる
-    popupRubyInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            applyRubyEdit();
-        } else if (e.key === 'Escape') {
-            closeRubyPopup();
-        }
-    });
-
-    // ポップアップ内のクリックは用紙のmousedownが拾わないよう伝播を止める
-    rubyPopup.addEventListener('mousedown', function(e) {
-        e.stopPropagation();
-    });
-
-    // =========================================
-    // 選択範囲の保存・復元
-    // =========================================
-    function saveSelection() {
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            if (paper.contains(range.commonAncestorContainer)) {
-                savedRange = range;
-                updateCurrentElementInfo(range.commonAncestorContainer);
-            }
-        }
-    }
-
-    function restoreSelection() {
-        if (savedRange) {
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(savedRange);
-        }
-    }
-
-    function updateCurrentElementInfo(node) {
-        let el = (node.nodeType === 3) ? node.parentNode : node;
-        const size = window.getComputedStyle(el).fontSize;
-        if(size) document.getElementById('fontSizeInput').value = parseInt(size);
-    }
-
-    paper.addEventListener('keyup', saveSelection);
-    paper.addEventListener('mouseup', saveSelection);
-    paper.addEventListener('blur', saveSelection);
-
-    // =========================================
-    // フォント・書式
-    // =========================================
-    function toggleFont(type) {
-        restoreSelection();
-        document.body.classList.remove('font-gothic', 'font-mincho');
-        document.body.classList.add('font-' + type);
-        document.getElementById('btn-gothic').classList.toggle('active', type === 'gothic');
-        document.getElementById('btn-mincho').classList.toggle('active', type === 'mincho');
-        paper.focus();
-    }
-
-    // =========================================
-    // ルビを新規に振る機能
-    // =========================================
-    function setRuby() {
-        restoreSelection();
-        const selection = window.getSelection();
-        if (selection.rangeCount === 0 || selection.isCollapsed) {
-            alert("ルビを振りたい文字を選択してください。");
-            return;
-        }
-
-        const text = selection.toString();
-        const rubyText = prompt("「" + text + "」のルビ（読み仮名）を入力してください:", "");
-
-        if (rubyText !== null) {
-            const html = `<ruby>${text}<rt>${rubyText}</rt></ruby>`;
-            document.execCommand('insertHTML', false, html);
+            // 新規挿入
+            const style = width ? ` style="width:${width}"` : "";
+            const imgHtml = `<img src="${url}" alt="${alt}"${style}>`;
+            
+            // エディタに挿入
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            editor.value = text.substring(0, start) + imgHtml + text.substring(end);
         }
         
-        paper.focus();
-        saveSelection();
+        syncPreviewToEditor();
+        updatePreview();
+        closeImageModal();
     }
 
-    // ルビ表示切り替え
-    function toggleRuby() {
-        restoreSelection();
-        document.body.classList.toggle('hide-ruby');
-        paper.focus();
+    function deleteCurrentImage() {
+        if (currentTargetImg && confirm("画像を削除しますか？")) {
+            currentTargetImg.remove();
+            syncPreviewToEditor();
+            closeImageModal();
+        }
     }
 
-    // Webモード切り替え
-    function toggleWebMode() {
-        document.body.classList.toggle('mode-web');
-        closeRubyPopup();
+    // =====================
+    // 編集モード切替
+    // =====================
+    function toggleEditMode() {
+        if (currentMode !== 'ruby') return;
+        if (editMode === 'ruby') setEditMode('text');
+        else { syncPreviewToEditor(); setEditMode('ruby'); }
     }
 
-    // コマンド実行
-    function execCmd(command) {
-        restoreSelection();
-        document.execCommand(command, false, null);
-        paper.focus();
-        saveSelection();
+    function setEditMode(mode) {
+        editMode = mode;
+        if (mode === 'text') {
+            preview.contentEditable = 'true';
+            preview.classList.remove('ruby-edit-mode');
+            preview.classList.add('text-edit-mode');
+            editModeIndicator.innerHTML = '<i class="fas fa-circle text-[6px]"></i> テキスト編集モード';
+            editModeIndicator.className = 'mode-text';
+            previewHint.textContent = 'テキストを直接編集できます';
+            preview.querySelectorAll('ruby').forEach(r => r.onclick = null);
+            preview.querySelectorAll('img').forEach(i => i.onclick = null);
+        } else {
+            preview.contentEditable = 'false';
+            preview.classList.add('ruby-edit-mode');
+            preview.classList.remove('text-edit-mode');
+            editModeIndicator.innerHTML = '<i class="fas fa-circle text-[6px]"></i> ルビ修正モード';
+            editModeIndicator.className = 'mode-ruby';
+            previewHint.textContent = 'クリックでルビ・画像修正';
+            attachEditEvents();
+        }
     }
 
-    // フォントサイズ変更
-    const fontSizeInput = document.getElementById('fontSizeInput');
-    fontSizeInput.addEventListener('change', function() {
-        restoreSelection(); 
-        const size = this.value + 'px';
-        applyStyleToSelection('fontSize', size);
-        paper.focus();
-        saveSelection();
+    // =====================
+    // プレビュー更新
+    // =====================
+    function updatePreview() {
+        if (currentMode === 'web') { updateWebIframe(); return; }
+        if (editMode === 'text') return;
+
+        const rawText = editor.value;
+        preview.innerHTML = smartBrConvert(rawText);
+        attachEditEvents();
+    }
+
+    function attachEditEvents() {
+        preview.querySelectorAll('ruby').forEach(ruby => {
+            ruby.onclick = (e) => { e.stopPropagation(); openRubyModal(ruby); };
+        });
+        preview.querySelectorAll('img').forEach(img => {
+            img.onclick = (e) => { 
+                e.stopPropagation(); 
+                img.classList.add('img-editing');
+                openImageModal(img); 
+            };
+            img.title = "画像設定を開く";
+        });
+    }
+
+    function smartBrConvert(html) {
+        const PRESERVE_TAGS = ['table', 'pre', 'ol', 'ul', 'dl', 'style', 'script'];
+        const pattern = new RegExp(`(<(?:${PRESERVE_TAGS.join('|')})[^>]*>[\\s\\S]*?</(?:${PRESERVE_TAGS.join('|')})>)`, 'gi');
+        const blocks = [];
+        let processed = html.replace(pattern, (match) => {
+            const idx = blocks.length;
+            blocks.push(match);
+            return `\x00BLOCK${idx}\x00`;
+        });
+        processed = processed.replace(/\n/g, '<br>');
+        processed = processed.replace(/\x00BLOCK(\d+)\x00/g, (_, idx) => blocks[parseInt(idx)]);
+        return processed;
+    }
+
+    function updateBaseFontSize() {
+        preview.style.fontSize = (parseInt(baseFontSizeInput.value) || 12) + 'pt';
+    }
+
+    function changeLayout() {
+        const type = document.getElementById('layout-select').value;
+        preview.className = `preview-content ruby-edit-mode ${type === 'a4' ? 'page-a4' : 'page-hp'}`;
+    }
+
+    // =====================
+    // 同期処理
+    // =====================
+    function syncPreviewToEditor() {
+        const clone = preview.cloneNode(true);
+        clone.querySelectorAll('table br').forEach(br => br.replaceWith(document.createTextNode('\x00TDBR\x00')));
+        clone.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
+        
+        // 不要なクラスをクリーンアップ
+        clone.querySelectorAll('.editing-active, .img-editing').forEach(el => {
+            el.classList.remove('editing-active', 'img-editing');
+        });
+
+        let html = clone.innerHTML;
+        html = html.replace(/\x00TDBR\x00/g, '<br>');
+        editor.value = html;
+    }
+
+    // =====================
+    // ルビ機能
+    // =====================
+    const modal = document.getElementById('ruby-modal');
+    const modalKanjiDisplay = document.getElementById('modal-kanji-display');
+    const modalRuby = document.getElementById('modal-ruby');
+
+    function openRubyModal(rubyElement) {
+        if (editMode !== 'ruby') return;
+        if (currentTargetRuby) currentTargetRuby.classList.remove('editing-active');
+        currentTargetRuby = rubyElement;
+        currentTargetRuby.classList.add('editing-active');
+        
+        let kanjiText = "";
+        rubyElement.childNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) kanjiText += node.textContent;
+        });
+        const rt = rubyElement.querySelector('rt');
+        modalKanjiDisplay.textContent = kanjiText;
+        modalRuby.value = rt ? rt.textContent : "";
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modalRuby.focus();
+    }
+
+    function closeRubyModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        if (currentTargetRuby) {
+            currentTargetRuby.classList.remove('editing-active');
+            currentTargetRuby = null;
+        }
+    }
+
+    function navigateRuby(direction) {
+        if (!currentTargetRuby) return;
+        const rt = currentTargetRuby.querySelector('rt');
+        if (rt) rt.textContent = modalRuby.value;
+        syncPreviewToEditor();
+        
+        const allRubies = Array.from(preview.querySelectorAll('ruby'));
+        const nextIndex = allRubies.indexOf(currentTargetRuby) + direction;
+        if (nextIndex >= 0 && nextIndex < allRubies.length) {
+            openRubyModal(allRubies[nextIndex]);
+        } else {
+            closeRubyModal();
+        }
+    }
+
+    function removeRubyTag() {
+        if (!currentTargetRuby) return;
+        let kanjiText = "";
+        currentTargetRuby.childNodes.forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE) kanjiText += node.textContent;
+        });
+        currentTargetRuby.parentNode.replaceChild(document.createTextNode(kanjiText), currentTargetRuby);
+        syncPreviewToEditor();
+        closeRubyModal();
+    }
+
+    // =====================
+    // 装飾
+    // =====================
+    function applyStyleToSelection(startTag, endTag) {
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0 && preview.contains(sel.anchorNode)) {
+            const range = sel.getRangeAt(0);
+            const content = range.extractContents();
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = startTag + ' ' + endTag;
+            const tag = wrapper.firstElementChild;
+            tag.innerHTML = "";
+            tag.appendChild(content);
+            range.insertNode(tag);
+            syncPreviewToEditor();
+        } else {
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+            editor.value = text.substring(0, start) + startTag + text.substring(start, end) + endTag + text.substring(end);
+            updatePreview();
+        }
+    }
+    function wrapSelection(tag) { applyStyleToSelection(`<${tag}>`, `</${tag}>`); }
+    function wrapColor(color) { applyStyleToSelection(`<span style="color:${color}">`, `</span>`); }
+    function wrapFontFamily(font) { if(font) applyStyleToSelection(`<span style="font-family:${font}">`, `</span>`); }
+    function applyPartialFontSize() {
+        const size = parseInt(selFontSizeInput.value);
+        if (size >= 6) applyStyleToSelection(`<span style="font-size:${size}pt">`, `</span>`);
+    }
+
+    // =====================
+    // その他
+    // =====================
+    function setPreviewMode(mode) {
+        currentMode = mode;
+        const btnRuby = document.getElementById('btn-mode-ruby');
+        const btnWeb = document.getElementById('btn-mode-web');
+        if (mode === 'ruby') {
+            btnRuby.classList.add('active'); btnWeb.classList.remove('active');
+            preview.classList.remove('hidden'); webIframe.classList.add('hidden');
+        } else {
+            btnWeb.classList.add('active'); btnRuby.classList.remove('active');
+            preview.classList.add('hidden'); webIframe.classList.remove('hidden');
+            updateWebIframe();
+        }
+    }
+
+    function updateWebIframe() {
+        const html = editor.value;
+        const size = parseInt(baseFontSizeInput.value) || 12;
+        webIframe.srcdoc = `<html><head><style>body{font-family:sans-serif;font-size:${size}pt;line-height:2.0;padding:1.5rem;} table{border-collapse:collapse;} th,td{border:1px solid #999;padding:4px 8px;} img{max-width:100%;height:auto;display:block;margin:1rem auto;}</style></head><body>${html}</body></html>`;
+    }
+
+    function copyHtml() {
+        navigator.clipboard.writeText(editor.value).then(() => alert('コピーしました'));
+    }
+
+    function openInNewTab() {
+        const blob = new Blob([`<html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;padding:2rem;line-height:2.0;} table{border-collapse:collapse;} th,td{border:1px solid #999;padding:4px 8px;} img{max-width:100%;height:auto;}</style></head><body>${editor.value}</body></html>`], { type: 'text/html' });
+        window.open(URL.createObjectURL(blob), '_blank');
+    }
+
+    // 貼り付けイベントで画像を取得 (エディタ上)
+    editor.addEventListener('paste', (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+            if (item.type.indexOf("image") !== -1) {
+                e.preventDefault();
+                const blob = item.getAsFile();
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const imgHtml = `<img src="${event.target.result}" alt="貼り付けた画像" style="width:100%">`;
+                    const start = editor.selectionStart;
+                    const text = editor.value;
+                    editor.value = text.substring(0, start) + imgHtml + text.substring(editor.selectionEnd);
+                    updatePreview();
+                };
+                reader.readAsDataURL(blob);
+            }
+        }
     });
 
-    function applyStyleToSelection(styleName, styleValue) {
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
-        const range = selection.getRangeAt(0);
-        const span = document.createElement("span");
-        span.style[styleName] = styleValue;
-        try {
-            range.surroundContents(span);
-        } catch (e) {
-            document.execCommand('styleWithCSS', false, true);
-        }
-    }
-    
-    // =========================================
-    // ソース編集モーダル
-    // =========================================
-    const modal = document.getElementById('sourceModal');
-    const sourceInput = document.getElementById('htmlSourceInput');
-    const contentArea = document.getElementById('editable-content');
-
-    function openSourceModal() {
-        sourceInput.value = contentArea.innerHTML.trim();
-        modal.classList.add('open');
-    }
-
-    function closeSourceModal() {
-        modal.classList.remove('open');
-    }
-
-    function applySource() {
-        contentArea.innerHTML = sourceInput.value;
-        closeSourceModal();
-        setTimeout(initClocks, 100);
-    }
-
-    // =========================================
-    // 時計描画ロジック
-    // =========================================
-    function drawClock(canvasId, hour, minute) {
-        const canvas = document.getElementById(canvasId);
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const radius = canvas.width / 2;
-        const cx = radius;
-        const cy = radius;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius - 2, 0, 2 * Math.PI);
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        for (let i = 0; i < 12; i++) {
-            const angle = (i * 30) * Math.PI / 180;
-            const x1 = cx + (radius - 10) * Math.sin(angle);
-            const y1 = cy - (radius - 10) * Math.cos(angle);
-            const x2 = cx + (radius - 2) * Math.sin(angle);
-            const y2 = cy - (radius - 2) * Math.cos(angle);
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
-        }
-
-        const hourAngle = ((hour % 12) * 30 + (minute / 60) * 30) * Math.PI / 180;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + (radius * 0.5) * Math.sin(hourAngle), cy - (radius * 0.5) * Math.cos(hourAngle));
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 4;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        const minuteAngle = (minute * 6) * Math.PI / 180;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + (radius * 0.8) * Math.sin(minuteAngle), cy - (radius * 0.8) * Math.cos(minuteAngle));
-        ctx.strokeStyle = '#000';
-        ctx.lineWidth = 2;
-        ctx.lineCap = 'round';
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
-        ctx.fillStyle = '#000';
-        ctx.fill();
-    }
-
-    function initClocks() {
-        drawClock('clockA', 15, 30);
-        drawClock('clockB', 14, 30);
-        drawClock('clockC', 6, 12);
-        drawClock('clockD', 14, 0);
-    }
-
-    window.onload = function() {
-        initClocks();
-    };
+    modalRuby.addEventListener('keydown', (e) => { if (e.key === 'Enter') navigateRuby(1); });
 </script>
-
 </body>
 </html>
