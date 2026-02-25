@@ -25,7 +25,6 @@
         #preview-container th, #preview-container td { border: 1px solid #999; padding: 4px 8px; }
         #preview-container th { background: #f3f4f6; font-weight: bold; }
         #web-iframe { width: 100%; height: 100%; border: none; background: white; }
-        /* 統一モードボタン */
         .mode-btn { padding: 4px 14px; border-radius: 9999px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.15s; }
         .mode-btn.active { background: #3b82f6; color: white; }
         .mode-btn:not(.active) { background: #e5e7eb; color: #374151; }
@@ -34,7 +33,6 @@
         .text-edit-mode:focus { outline: none; }
         .text-edit-mode ruby { cursor: text !important; border-bottom: none !important; }
         .text-edit-mode ruby:hover { background-color: transparent !important; }
-        /* ルビ追加ボタン（選択時にフロート表示） */
         #add-ruby-btn {
             position: absolute; z-index: 100; display: none;
             background: #3b82f6; color: white; border: none; border-radius: 6px;
@@ -46,9 +44,7 @@
             content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
             border: 5px solid transparent; border-top-color: #3b82f6;
         }
-        /* クロスハイライト */
         .cross-highlight { background-color: #fef08a; border-radius: 2px; }
-        mark.cross-hl-editor { background-color: #fef08a; color: inherit; }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
@@ -85,26 +81,12 @@
         <button onmousedown="event.preventDefault()" onclick="wrapSelection('b')" class="p-1.5 hover:bg-gray-100 rounded" title="太字"><i class="fas fa-bold"></i></button>
         <button onmousedown="event.preventDefault()" onclick="wrapColor('red')" class="p-1.5 hover:bg-gray-100 rounded text-red-500" title="赤文字"><i class="fas fa-font"></i></button>
     </div>
-    <div class="flex items-center border border-gray-300 rounded px-1 bg-gray-50">
-        <span class="text-[10px] text-gray-500 mr-1 font-bold">選択文字</span>
-        <input type="number" id="sel-font-size" value="16" class="w-10 p-0.5 text-center text-xs border-none bg-transparent focus:ring-0 outline-none">
-        <span class="text-[10px] text-gray-500 mr-1">pt</span>
-        <div class="flex flex-col border-l border-gray-300 pl-1">
-            <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▲</button>
-            <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(-1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▼</button>
-        </div>
-        <button onmousedown="event.preventDefault()" onclick="applyPartialFontSize()" class="ml-1 text-xs text-gray-600 hover:text-blue-500 px-1"><i class="fas fa-check"></i></button>
-    </div>
     <div class="flex items-center border-r pr-3 gap-1">
         <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition"><i class="fas fa-image"></i> 画像挿入</button>
-    </div>
-    <div class="flex items-center gap-2 ml-auto">
-        <a href="https://gemini.google.com/gem/1aQXlT177ks4j2LLC5ooZCyZV3xKGBIlx?usp=sharing" target="_blank" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-100 transition flex items-center shadow-sm"><i class="fas fa-external-link-alt mr-2"></i> ルビを付けるGemを開く</a>
     </div>
 </div>
 
 <div class="flex flex-1 overflow-hidden">
-    <!-- 左: HTMLソース -->
     <div class="w-1/2 flex flex-col border-r border-gray-300 bg-gray-50">
         <div class="p-2 bg-gray-100 border-b text-xs font-bold text-gray-500"><span>HTMLソース入力</span></div>
         <textarea id="html-editor"
@@ -112,7 +94,6 @@
             placeholder="<!-- ここにHTMLを貼り付けてください -->&#13;&#10;<ruby>漢字<rt>かんじ</rt></ruby>..."
             oninput="updatePreview()"></textarea>
     </div>
-    <!-- 右: プレビュー -->
     <div class="w-1/2 flex flex-col bg-gray-200 overflow-hidden">
         <div class="p-2 bg-gray-200/90 backdrop-blur border-b border-gray-300 flex justify-between items-center text-xs font-bold text-gray-500 shrink-0">
             <div class="flex items-center gap-2">
@@ -208,7 +189,6 @@
 const editor = document.getElementById('html-editor');
 const preview = document.getElementById('preview-container');
 const baseFontSizeInput = document.getElementById('base-font-size');
-const selFontSizeInput = document.getElementById('sel-font-size');
 const webIframe = document.getElementById('web-iframe');
 const previewHint = document.getElementById('preview-hint');
 const addRubyBtn = document.getElementById('add-ruby-btn');
@@ -217,7 +197,10 @@ let currentTargetRuby = null, lastRange = null;
 let currentMode = 'web';
 let editorCursorPos = null, previewInsertRange = null;
 let aspectLocked = false, aspectRatio = null, changingFrom = null;
-let addRubyRange = null; // ルビ追加用の選択範囲
+let addRubyRange = null;
+
+// Enterでdivを使うよう設定
+try { document.execCommand('defaultParagraphSeparator', false, 'div'); } catch(e) {}
 
 editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
 editor.addEventListener('keyup', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
@@ -238,14 +221,12 @@ window.addEventListener('DOMContentLoaded', () => {
     updateWebIframe();
 });
 
-// ===================== モード切替（3ボタン統一） =====================
+// ===================== モード切替 =====================
 function setMode(mode) {
-    // テキスト編集から離れるとき同期
     if (currentMode === 'text' && mode !== 'text') {
-        syncPreviewToEditorSafe();
+        syncTextModeToEditor();
         preview.contentEditable = 'false';
         preview.classList.remove('text-edit-mode');
-        preview.removeEventListener('input', onPreviewDirectEdit);
     }
     currentMode = mode;
     document.getElementById('btn-mode-web').classList.toggle('active', mode === 'web');
@@ -263,24 +244,126 @@ function setMode(mode) {
         preview.classList.remove('hidden'); webIframe.classList.add('hidden');
         preview.contentEditable = 'false';
         preview.classList.add('ruby-edit-mode'); preview.classList.remove('text-edit-mode');
-        preview.removeEventListener('input', onPreviewDirectEdit);
         previewHint.textContent = 'クリックでルビ編集 / テキスト選択でルビ追加';
         updatePreview();
     } else { // text
         preview.classList.remove('hidden'); webIframe.classList.add('hidden');
         preview.classList.remove('ruby-edit-mode'); preview.classList.add('text-edit-mode');
-        preview.contentEditable = 'true';
-        previewHint.textContent = 'テキストを直接編集できます';
+        previewHint.textContent = 'テキストを直接編集（モード切替で反映）';
         preview.querySelectorAll('ruby').forEach(r => { r.onclick = null; });
-        preview.addEventListener('input', onPreviewDirectEdit);
-        // テキスト編集に入るときプレビューを最新化
-        preview.innerHTML = smartBrConvert(editor.value);
+        // HTMLをdivベースに変換してcontentEditableに設定
+        enterTextEditMode();
     }
 }
 
-function onPreviewDirectEdit() { syncPreviewToEditorSafe(); }
+// ===================== テキスト編集モード：divベース変換 =====================
+function enterTextEditMode() {
+    // まずsmartBrConvertでHTMLを準備
+    const html = smartBrConvert(editor.value);
+    // 一時divにパースしてDOM操作
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    // 直下ノードを走査して<br>で区切り、divにまとめる
+    const blockTags = new Set(['TABLE','DIV','UL','OL','DL','PRE','BLOCKQUOTE','H1','H2','H3','H4','H5','H6','HR','P']);
+    const nodes = Array.from(tmp.childNodes);
+    const fragment = document.createDocumentFragment();
+    let buf = [];
 
-// ===================== ルビ追加ボタン表示制御 =====================
+    function flushBuf() {
+        if (buf.length === 0) return;
+        const d = document.createElement('div');
+        buf.forEach(n => d.appendChild(n));
+        fragment.appendChild(d);
+        buf = [];
+    }
+    function addEmptyDiv() {
+        const d = document.createElement('div');
+        d.appendChild(document.createElement('br'));
+        fragment.appendChild(d);
+    }
+
+    for (const node of nodes) {
+        if (node.nodeName === 'BR') {
+            if (buf.length === 0) {
+                addEmptyDiv();
+            } else {
+                flushBuf();
+            }
+        } else if (node.nodeType === 1 && blockTags.has(node.nodeName)) {
+            flushBuf();
+            fragment.appendChild(node);
+        } else {
+            buf.push(node);
+        }
+    }
+    flushBuf();
+
+    // fragmentが空なら空行を1つ
+    if (fragment.childNodes.length === 0) addEmptyDiv();
+
+    preview.innerHTML = '';
+    preview.appendChild(fragment);
+    preview.contentEditable = 'true';
+    preview.focus();
+}
+
+// ===================== テキスト編集→エディタ同期 =====================
+function syncTextModeToEditor() {
+    const c = preview.cloneNode(true);
+    // ハイライト除去
+    c.querySelectorAll('.cross-highlight').forEach(el => {
+        const p = el.parentNode;
+        while (el.firstChild) p.insertBefore(el.firstChild, el);
+        p.removeChild(el);
+    });
+
+    // table内brは保持マーカーに
+    c.querySelectorAll('table br').forEach(br => {
+        br.replaceWith(document.createTextNode('\x00TDBR\x00'));
+    });
+
+    // 直下の子要素を処理
+    const lines = [];
+    const blockTags = new Set(['TABLE','UL','OL','DL','PRE','BLOCKQUOTE','H1','H2','H3','H4','H5','H6','HR','P']);
+
+    for (const child of Array.from(c.childNodes)) {
+        if (child.nodeType === 1 && child.nodeName === 'DIV' && !child.hasAttributes()) {
+            // テキスト編集用のdiv → 中身を1行として取得
+            // 中のbrを除去（末尾の空行用br）
+            child.querySelectorAll('br').forEach(br => {
+                // 子が<br>のみの場合は空行
+                if (child.childNodes.length === 1 && child.firstChild === br) {
+                    br.replaceWith(document.createTextNode(''));
+                } else {
+                    br.replaceWith(document.createTextNode('\x00INNERBR\x00'));
+                }
+            });
+            lines.push(child.innerHTML);
+        } else if (child.nodeType === 1 && blockTags.has(child.nodeName)) {
+            // ブロック要素はそのままHTMLとして
+            // 中のbrは改行タグとして残す
+            lines.push(child.outerHTML);
+        } else if (child.nodeType === 1 && child.nodeName === 'DIV' && child.hasAttributes()) {
+            // 属性付きdiv（画像配置用など）はそのまま
+            lines.push(child.outerHTML);
+        } else if (child.nodeType === 3) {
+            // テキストノード（通常ないが念のため）
+            const t = child.textContent;
+            if (t.trim()) lines.push(t);
+        } else {
+            lines.push(child.outerHTML || child.textContent);
+        }
+    }
+
+    let result = lines.join('\n');
+    result = result.replace(/\x00TDBR\x00/g, '<br>');
+    result = result.replace(/\x00INNERBR\x00/g, '<br>');
+    // 3つ以上の連続改行を2つに
+    result = result.replace(/\n{3,}/g, '\n\n');
+    editor.value = result;
+}
+
+// ===================== ルビ追加ボタン =====================
 function hideAddRubyBtn() { addRubyBtn.style.display = 'none'; addRubyRange = null; }
 
 document.addEventListener('selectionchange', () => {
@@ -289,16 +372,13 @@ document.addEventListener('selectionchange', () => {
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
     const r = sel.getRangeAt(0);
     if (!preview.contains(r.commonAncestorContainer)) { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
-    // 選択テキストが<ruby>の中だけならボタン不要
     const txt = sel.toString().trim();
     if (!txt) { hideAddRubyBtn(); return; }
-    // 選択範囲がruby内部に完全に含まれるか
     let node = r.commonAncestorContainer;
     while (node && node !== preview) {
         if (node.nodeName === 'RUBY') { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
         node = node.parentNode;
     }
-    // ボタンを表示
     addRubyRange = r.cloneRange();
     const rect = r.getBoundingClientRect();
     const container = document.getElementById('preview-scroll-inner');
@@ -306,7 +386,6 @@ document.addEventListener('selectionchange', () => {
     addRubyBtn.style.display = 'block';
     addRubyBtn.style.left = (rect.left + rect.width/2 - cRect.left - 40) + 'px';
     addRubyBtn.style.top = (rect.top - cRect.top - 32 + container.scrollTop) + 'px';
-    // 選択範囲もキャプチャ
     lastRange = r.cloneRange();
 });
 
@@ -342,7 +421,6 @@ function confirmAddRuby() {
     attachRubyClickEvents();
     closeAddRubyModal();
 }
-
 document.getElementById('add-ruby-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); confirmAddRuby(); }
 });
@@ -356,8 +434,6 @@ function clearCrossHighlights() {
         parent.removeChild(el);
     });
 }
-
-// エディタで選択 → プレビューにハイライト
 editor.addEventListener('select', () => {
     if (currentMode === 'web') return;
     clearCrossHighlights();
@@ -366,56 +442,36 @@ editor.addEventListener('select', () => {
         const s = editor.selectionStart, e = editor.selectionEnd;
         if (s === e) return;
         const selText = editor.value.substring(s, e);
-        // テキストのみ抽出して比較用にする
         const plainSel = selText.replace(/<[^>]*>/g, '').trim();
         if (!plainSel || plainSel.length < 1) return;
         highlightTextInPreview(plainSel);
     }, 200);
 });
-
 function highlightTextInPreview(text) {
     if (!text || currentMode === 'web') return;
     const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT, null, false);
-    const textNodes = [];
-    let n;
+    const textNodes = []; let n;
     while (n = walker.nextNode()) {
-        // rt要素内のテキストは除外
         if (n.parentNode && n.parentNode.nodeName === 'RT') continue;
         textNodes.push(n);
     }
-    // テキストノードを結合して検索
-    let combined = '';
-    const map = []; // {node, startInCombined, length}
-    for (const tn of textNodes) {
-        map.push({ node: tn, start: combined.length, len: tn.textContent.length });
-        combined += tn.textContent;
-    }
+    let combined = ''; const map = [];
+    for (const tn of textNodes) { map.push({ node: tn, start: combined.length, len: tn.textContent.length }); combined += tn.textContent; }
     const idx = combined.indexOf(text);
     if (idx === -1) return;
     const end = idx + text.length;
-    // 該当テキストノードを特定してwrap
     for (const m of map) {
         const mEnd = m.start + m.len;
         if (mEnd <= idx || m.start >= end) continue;
-        const hlStart = Math.max(0, idx - m.start);
-        const hlEnd = Math.min(m.len, end - m.start);
-        const tn = m.node;
-        const before = tn.textContent.substring(0, hlStart);
-        const mid = tn.textContent.substring(hlStart, hlEnd);
-        const after = tn.textContent.substring(hlEnd);
+        const hlStart = Math.max(0, idx - m.start), hlEnd = Math.min(m.len, end - m.start);
+        const tn = m.node, before = tn.textContent.substring(0, hlStart), mid = tn.textContent.substring(hlStart, hlEnd), after = tn.textContent.substring(hlEnd);
         const frag = document.createDocumentFragment();
         if (before) frag.appendChild(document.createTextNode(before));
-        const span = document.createElement('span');
-        span.className = 'cross-highlight';
-        span.textContent = mid;
-        frag.appendChild(span);
+        const span = document.createElement('span'); span.className = 'cross-highlight'; span.textContent = mid; frag.appendChild(span);
         if (after) frag.appendChild(document.createTextNode(after));
         tn.parentNode.replaceChild(frag, tn);
     }
 }
-
-// プレビューで選択 → エディタテキストエリアは直接ハイライトできないので、
-// 選択範囲のテキストをエディタ内で検索し、selectionStartとselectionEndを設定する
 preview.addEventListener('mouseup', () => {
     if (currentMode === 'web') return;
     setTimeout(() => {
@@ -423,24 +479,15 @@ preview.addEventListener('mouseup', () => {
         if (!sel || sel.isCollapsed || !preview.contains(sel.anchorNode)) return;
         const selText = sel.toString().trim();
         if (!selText || selText.length < 1) return;
-        // エディタのプレーンテキスト内で検索
         const plain = editor.value.replace(/<[^>]*>/g, '');
         const idx = plain.indexOf(selText);
         if (idx === -1) return;
-        // プレーンテキスト位置からHTML位置へマッピング
         const htmlPos = plainIndexToHtmlIndex(editor.value, idx, selText.length);
-        if (htmlPos) {
-            editor.focus();
-            editor.selectionStart = htmlPos.start;
-            editor.selectionEnd = htmlPos.end;
-            // すぐにフォーカスを戻さない（選択が消えないように）
-        }
+        if (htmlPos) { editor.focus(); editor.selectionStart = htmlPos.start; editor.selectionEnd = htmlPos.end; }
     }, 100);
 });
-
 function plainIndexToHtmlIndex(html, plainStart, plainLen) {
-    let pi = 0, hi = 0, inTag = false;
-    let start = -1, end = -1;
+    let pi = 0, hi = 0, inTag = false, start = -1, end = -1;
     for (hi = 0; hi < html.length; hi++) {
         if (html[hi] === '<') { inTag = true; continue; }
         if (html[hi] === '>') { inTag = false; continue; }
@@ -451,7 +498,6 @@ function plainIndexToHtmlIndex(html, plainStart, plainLen) {
     }
     if (start === -1) return null;
     if (end === -1) end = html.length;
-    // タグも含めた範囲に拡張
     return { start, end };
 }
 
@@ -488,11 +534,11 @@ function openImgModal() {
     aspectLocked=false; aspectRatio=null; document.getElementById('aspect-lock-icon').className='fas fa-lock-open';
     const btn=document.getElementById('btn-aspect-lock'); btn.classList.remove('bg-yellow-100','border-yellow-400','text-yellow-600'); btn.classList.add('bg-gray-50','border-gray-300','text-gray-500');
 }
-function closeImgModal() { const m=document.getElementById('img-modal'); m.classList.add('hidden'); m.classList.remove('flex'); }
+function closeImgModal() { document.getElementById('img-modal').classList.add('hidden'); document.getElementById('img-modal').classList.remove('flex'); }
 function previewImgUrl() {
     const url=document.getElementById('img-url-input').value.trim(),img=document.getElementById('url-preview-img'),ph=document.getElementById('url-preview-placeholder');
     if(!url){img.classList.add('hidden');ph.textContent='URLを入力するとプレビューが表示されます';ph.classList.remove('hidden');return;}
-    img.onload=()=>{img.classList.remove('hidden');ph.classList.add('hidden');if(aspectLocked&&img.naturalWidth&&img.naturalHeight&&!aspectRatio)aspectRatio=img.naturalWidth/img.naturalHeight;};
+    img.onload=()=>{img.classList.remove('hidden');ph.classList.add('hidden');};
     img.onerror=()=>{img.classList.add('hidden');ph.textContent='⚠ 画像を読み込めません';ph.classList.remove('hidden');};
     img.src=url;
 }
@@ -549,7 +595,6 @@ function capturePreviewSelectionRange(){
     const r=sel.getRangeAt(0);
     if(!r.collapsed&&preview.contains(r.commonAncestorContainer))lastRange=r.cloneRange();
 }
-['pointerdown','mousedown','touchstart'].forEach(evt=>{selFontSizeInput.addEventListener(evt,capturePreviewSelectionRange,{passive:true});});
 
 // ===================== 装飾 =====================
 function applyStyleToSelection(s,e2){
@@ -567,8 +612,6 @@ function insertTagToEditor(s,e2){const st=editor.selectionStart,en=editor.select
 function wrapSelection(tag){applyStyleToSelection(`<${tag}>`,`</${tag}>`);}
 function wrapColor(c){applyStyleToSelection(`<span style="color:${c}">`,'</span>');}
 function wrapFontFamily(f){if(!f)return;applyStyleToSelection(`<span style="font-family:${f}">`,'</span>');}
-function applyPartialFontSize(){const s=parseInt(selFontSizeInput.value);if(!s||s<6)return;applyStyleToSelection(`<span style="font-size:${s}pt">`,'</span>');}
-function applyPartialFontSizeStep(d){capturePreviewSelectionRange();selFontSizeInput.value=Math.max(6,(parseInt(selFontSizeInput.value)||16)+d);applyPartialFontSize();}
 
 // ===================== ルビ編集 =====================
 function attachRubyClickEvents(){preview.querySelectorAll('ruby').forEach(r=>{r.onclick=e=>{e.stopPropagation();openRubyModal(r);};r.title='編集する';});}
@@ -586,7 +629,7 @@ function saveRubyAndStay(){if(!currentTargetRuby)return;const rt=currentTargetRu
 function navigateRuby(dir){if(!currentTargetRuby)return;saveRubyAndStay();const all=Array.from(preview.querySelectorAll('ruby'));const ni=all.indexOf(currentTargetRuby)+dir;if(ni>=0&&ni<all.length)openRubyModal(all[ni]);else closeRubyModal();}
 function removeRubyTag(){if(!currentTargetRuby)return;let k='';currentTargetRuby.childNodes.forEach(n=>{if(n.nodeType===Node.TEXT_NODE)k+=n.textContent;});currentTargetRuby.parentNode.replaceChild(document.createTextNode(k),currentTargetRuby);syncPreviewToEditor();closeRubyModal();}
 
-// ===================== 同期 =====================
+// ===================== 同期（ルビ編集用） =====================
 function syncPreviewToEditor(){
     const c=preview.cloneNode(true);
     c.querySelectorAll('.cross-highlight').forEach(el=>{const p=el.parentNode;while(el.firstChild)p.insertBefore(el.firstChild,el);p.removeChild(el);});
@@ -594,21 +637,13 @@ function syncPreviewToEditor(){
     c.querySelectorAll('br').forEach(br=>br.replaceWith(document.createTextNode('\n')));
     editor.value=c.innerHTML.replace(/\x00TDBR\x00/g,'<br>');
 }
-function syncPreviewToEditorSafe(){
-    const c=preview.cloneNode(true);
-    c.querySelectorAll('.cross-highlight').forEach(el=>{const p=el.parentNode;while(el.firstChild)p.insertBefore(el.firstChild,el);p.removeChild(el);});
-    c.querySelectorAll('table br').forEach(br=>br.replaceWith(document.createTextNode('\x00TDBR\x00')));
-    c.querySelectorAll('br').forEach(br=>br.replaceWith(document.createTextNode('\n')));
-    c.querySelectorAll('div').forEach(div=>{if(div.hasAttributes())return;div.insertAdjacentText('afterbegin','\n');div.replaceWith(...div.childNodes);});
-    editor.value=c.innerHTML.replace(/\x00TDBR\x00/g,'<br>');
-}
+
 function copyHtml(){navigator.clipboard.writeText(editor.value).then(()=>alert('コピーしました'));}
 
 modal.addEventListener('click',e=>{if(e.target===modal)closeRubyModal();});
 document.getElementById('img-modal').addEventListener('click',e=>{if(e.target===document.getElementById('img-modal'))closeImgModal();});
 document.getElementById('add-ruby-modal').addEventListener('click',e=>{if(e.target===document.getElementById('add-ruby-modal'))closeAddRubyModal();});
 modalRuby.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();navigateRuby(1);}});
-selFontSizeInput.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();capturePreviewSelectionRange();applyPartialFontSize();}});
 </script>
 </body>
 </html>
