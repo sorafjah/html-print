@@ -65,16 +65,12 @@
     <div class="flex items-center border-r pr-3 gap-2">
         <span class="text-gray-500 text-xs font-bold uppercase">全体サイズ</span>
         <div class="flex items-center">
-            <input type="number" id="base-font-size" value="12" min="6" max="72" class="w-14 border border-gray-300 rounded p-1 text-center" onchange="updateBaseFontSize()">
+            <input type="number" id="base-font-size" value="12" min="6" max="72" class="w-16 border border-gray-300 rounded p-1 text-center outline-none focus:ring-1 focus:ring-blue-400" onchange="updateBaseFontSize()">
             <span class="ml-1 text-gray-600 text-xs">pt</span>
-            <div class="flex flex-col ml-1 gap-0.5">
-                <button onmousedown="event.preventDefault()" onclick="stepFontSize(1)" class="bg-gray-200 hover:bg-gray-300 px-1 rounded text-[10px] leading-none">▲</button>
-                <button onmousedown="event.preventDefault()" onclick="stepFontSize(-1)" class="bg-gray-200 hover:bg-gray-300 px-1 rounded text-[10px] leading-none">▼</button>
-            </div>
         </div>
     </div>
     <div class="flex items-center border-r pr-3 gap-1">
-        <select id="font-family-select" onchange="wrapFontFamily(this.value); this.value='';" class="border border-gray-300 rounded p-1 w-24 mr-1 text-xs">
+        <select id="font-family-select" onchange="wrapFontFamily(this.value); this.value='';" class="border border-gray-300 rounded p-1 w-24 mr-1 text-xs outline-none focus:ring-1 focus:ring-blue-400">
             <option value="" disabled selected>フォント</option>
             <option value="">デフォルト(UD)</option>
             <option value="'UD Digi Kyokasho','YuKyokasho','Kaisho',serif">教科書体</option>
@@ -82,24 +78,17 @@
             <option value="'Hiragino Kaku Gothic ProN','YuGothic','MS PGothic',sans-serif">ゴシック</option>
             <option value="'Hiragino Maru Gothic ProN','HGMaruGothicMPRO','Rounded Mplus 1c',sans-serif">丸ゴシック</option>
         </select>
-        <button onmousedown="event.preventDefault()" onclick="wrapSelection('b')" class="p-1.5 hover:bg-gray-100 rounded" title="太字"><i class="fas fa-bold"></i></button>
+        <button onmousedown="event.preventDefault()" onclick="wrapSelection('b')" class="p-1.5 hover:bg-gray-100 rounded text-gray-700" title="太字"><i class="fas fa-bold"></i></button>
         <button onmousedown="event.preventDefault()" onclick="wrapColor('red')" class="p-1.5 hover:bg-gray-100 rounded text-red-500" title="赤文字"><i class="fas fa-font"></i></button>
+        <button onmousedown="event.preventDefault()" onclick="insertTagToEditor('<br>\n', '')" class="p-1.5 hover:bg-gray-100 rounded text-gray-600 ml-1" title="改行タグを挿入"><i class="fas fa-arrow-turn-down"></i></button>
     </div>
-    <div class="flex items-center border border-gray-300 rounded px-1 bg-gray-50">
-        <span class="text-[10px] text-gray-500 mr-1 font-bold">選択文字</span>
-        <input type="number" id="sel-font-size" value="16" class="w-10 p-0.5 text-center text-xs border-none bg-transparent focus:ring-0 outline-none">
-        <span class="text-[10px] text-gray-500 mr-1">pt</span>
-        <div class="flex flex-col border-l border-gray-300 pl-1">
-            <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▲</button>
-            <button onmousedown="event.preventDefault()" onclick="applyPartialFontSizeStep(-1)" class="text-[8px] leading-none hover:text-blue-500 hover:bg-blue-50 w-4 h-3 rounded-sm flex items-center justify-center">▼</button>
-        </div>
-        <button onmousedown="event.preventDefault()" onclick="applyPartialFontSize()" class="ml-1 text-xs text-gray-600 hover:text-blue-500 px-1"><i class="fas fa-check"></i></button>
+    <div class="flex items-center border border-gray-300 rounded px-2 py-1 bg-gray-50 gap-1">
+        <span class="text-[10px] text-gray-500 font-bold">選択文字</span>
+        <input type="number" id="sel-font-size" value="16" min="6" max="72" class="w-14 p-1 text-center text-xs border border-gray-200 rounded outline-none focus:ring-1 focus:ring-blue-400" onchange="applyPartialFontSize()">
+        <span class="text-[10px] text-gray-500">pt</span>
     </div>
-    <div class="flex items-center border-r pr-3 gap-1">
+    <div class="flex items-center gap-1 pl-2">
         <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition"><i class="fas fa-image"></i> 画像挿入</button>
-    </div>
-    <div class="flex items-center gap-2 ml-auto">
-        <a href="https://gemini.google.com/gem/1aQXlT177ks4j2LLC5ooZCyZV3xKGBIlx?usp=sharing" target="_blank" class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded hover:bg-indigo-100 transition flex items-center shadow-sm"><i class="fas fa-external-link-alt mr-2"></i> ルビを付けるGemを開く</a>
     </div>
 </div>
 
@@ -217,7 +206,7 @@ let currentTargetRuby = null, lastRange = null;
 let currentMode = 'web';
 let editorCursorPos = null, previewInsertRange = null;
 let aspectLocked = false, aspectRatio = null, changingFrom = null;
-let addRubyRange = null; // ルビ追加用の選択範囲
+let addRubyRange = null;
 
 editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
 editor.addEventListener('keyup', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
@@ -238,9 +227,8 @@ window.addEventListener('DOMContentLoaded', () => {
     updateWebIframe();
 });
 
-// ===================== モード切替（3ボタン統一） =====================
+// ===================== モード切替 =====================
 function setMode(mode) {
-    // テキスト編集から離れるとき同期
     if (currentMode === 'text' && mode !== 'text') {
         syncPreviewToEditorSafe();
         preview.contentEditable = 'false';
@@ -273,7 +261,6 @@ function setMode(mode) {
         previewHint.textContent = 'テキストを直接編集できます';
         preview.querySelectorAll('ruby').forEach(r => { r.onclick = null; });
         preview.addEventListener('input', onPreviewDirectEdit);
-        // テキスト編集に入るときプレビューを最新化
         preview.innerHTML = smartBrConvert(editor.value);
     }
 }
@@ -289,16 +276,13 @@ document.addEventListener('selectionchange', () => {
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
     const r = sel.getRangeAt(0);
     if (!preview.contains(r.commonAncestorContainer)) { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
-    // 選択テキストが<ruby>の中だけならボタン不要
     const txt = sel.toString().trim();
     if (!txt) { hideAddRubyBtn(); return; }
-    // 選択範囲がruby内部に完全に含まれるか
     let node = r.commonAncestorContainer;
     while (node && node !== preview) {
         if (node.nodeName === 'RUBY') { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
         node = node.parentNode;
     }
-    // ボタンを表示
     addRubyRange = r.cloneRange();
     const rect = r.getBoundingClientRect();
     const container = document.getElementById('preview-scroll-inner');
@@ -306,7 +290,6 @@ document.addEventListener('selectionchange', () => {
     addRubyBtn.style.display = 'block';
     addRubyBtn.style.left = (rect.left + rect.width/2 - cRect.left - 40) + 'px';
     addRubyBtn.style.top = (rect.top - cRect.top - 32 + container.scrollTop) + 'px';
-    // 選択範囲もキャプチャ
     lastRange = r.cloneRange();
 });
 
@@ -357,7 +340,6 @@ function clearCrossHighlights() {
     });
 }
 
-// エディタで選択 → プレビューにハイライト
 editor.addEventListener('select', () => {
     if (currentMode === 'web') return;
     clearCrossHighlights();
@@ -366,7 +348,6 @@ editor.addEventListener('select', () => {
         const s = editor.selectionStart, e = editor.selectionEnd;
         if (s === e) return;
         const selText = editor.value.substring(s, e);
-        // テキストのみ抽出して比較用にする
         const plainSel = selText.replace(/<[^>]*>/g, '').trim();
         if (!plainSel || plainSel.length < 1) return;
         highlightTextInPreview(plainSel);
@@ -379,13 +360,11 @@ function highlightTextInPreview(text) {
     const textNodes = [];
     let n;
     while (n = walker.nextNode()) {
-        // rt要素内のテキストは除外
         if (n.parentNode && n.parentNode.nodeName === 'RT') continue;
         textNodes.push(n);
     }
-    // テキストノードを結合して検索
     let combined = '';
-    const map = []; // {node, startInCombined, length}
+    const map = [];
     for (const tn of textNodes) {
         map.push({ node: tn, start: combined.length, len: tn.textContent.length });
         combined += tn.textContent;
@@ -393,7 +372,6 @@ function highlightTextInPreview(text) {
     const idx = combined.indexOf(text);
     if (idx === -1) return;
     const end = idx + text.length;
-    // 該当テキストノードを特定してwrap
     for (const m of map) {
         const mEnd = m.start + m.len;
         if (mEnd <= idx || m.start >= end) continue;
@@ -414,8 +392,6 @@ function highlightTextInPreview(text) {
     }
 }
 
-// プレビューで選択 → エディタテキストエリアは直接ハイライトできないので、
-// 選択範囲のテキストをエディタ内で検索し、selectionStartとselectionEndを設定する
 preview.addEventListener('mouseup', () => {
     if (currentMode === 'web') return;
     setTimeout(() => {
@@ -423,17 +399,14 @@ preview.addEventListener('mouseup', () => {
         if (!sel || sel.isCollapsed || !preview.contains(sel.anchorNode)) return;
         const selText = sel.toString().trim();
         if (!selText || selText.length < 1) return;
-        // エディタのプレーンテキスト内で検索
         const plain = editor.value.replace(/<[^>]*>/g, '');
         const idx = plain.indexOf(selText);
         if (idx === -1) return;
-        // プレーンテキスト位置からHTML位置へマッピング
         const htmlPos = plainIndexToHtmlIndex(editor.value, idx, selText.length);
         if (htmlPos) {
             editor.focus();
             editor.selectionStart = htmlPos.start;
             editor.selectionEnd = htmlPos.end;
-            // すぐにフォーカスを戻さない（選択が消えないように）
         }
     }, 100);
 });
@@ -451,7 +424,6 @@ function plainIndexToHtmlIndex(html, plainStart, plainLen) {
     }
     if (start === -1) return null;
     if (end === -1) end = html.length;
-    // タグも含めた範囲に拡張
     return { start, end };
 }
 
@@ -530,7 +502,6 @@ function smartBrConvert(html) {
     p=p.replace(/\n/g,'<br>'); return p.replace(/\x00B(\d+)\x00/g,(_,i)=>b[+i]);
 }
 function updateBaseFontSize(){preview.style.fontSize=(parseInt(baseFontSizeInput.value)||12)+'pt';if(currentMode==='web')updateWebIframe();}
-function stepFontSize(d){baseFontSizeInput.value=Math.max(6,(parseInt(baseFontSizeInput.value)||12)+d);updateBaseFontSize();}
 
 function updateWebIframe(){
     const sz=parseInt(baseFontSizeInput.value)||12;
@@ -563,12 +534,19 @@ function applyStyleToPreview(s,e2,range){
     const tmp=document.createElement('div');tmp.innerHTML=s+'dummy'+e2;const w=tmp.firstElementChild;
     if(w){try{const lr=range.cloneRange();const c=lr.extractContents();w.innerHTML='';w.appendChild(c);lr.insertNode(w);syncPreviewToEditor();const nr=document.createRange();nr.selectNodeContents(w);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(nr);lastRange=nr.cloneRange();}catch(err){alert('その選択範囲には適用できませんでした');}}
 }
-function insertTagToEditor(s,e2){const st=editor.selectionStart,en=editor.selectionEnd,t=editor.value;editor.value=t.substring(0,st)+s+t.substring(st,en)+e2+t.substring(en);editor.focus();editor.selectionStart=st+s.length;editor.selectionEnd=en+s.length;updatePreview();}
+function insertTagToEditor(s,e2){
+    if (editorCursorPos === null) editorCursorPos = editor.selectionStart;
+    const st=editor.selectionStart,en=editor.selectionEnd,t=editor.value;
+    editor.value=t.substring(0,st)+s+t.substring(st,en)+e2+t.substring(en);
+    editor.focus();
+    editor.selectionStart=st+s.length;
+    editor.selectionEnd=en+s.length;
+    updatePreview();
+}
 function wrapSelection(tag){applyStyleToSelection(`<${tag}>`,`</${tag}>`);}
 function wrapColor(c){applyStyleToSelection(`<span style="color:${c}">`,'</span>');}
 function wrapFontFamily(f){if(!f)return;applyStyleToSelection(`<span style="font-family:${f}">`,'</span>');}
 function applyPartialFontSize(){const s=parseInt(selFontSizeInput.value);if(!s||s<6)return;applyStyleToSelection(`<span style="font-size:${s}pt">`,'</span>');}
-function applyPartialFontSizeStep(d){capturePreviewSelectionRange();selFontSizeInput.value=Math.max(6,(parseInt(selFontSizeInput.value)||16)+d);applyPartialFontSize();}
 
 // ===================== ルビ編集 =====================
 function attachRubyClickEvents(){preview.querySelectorAll('ruby').forEach(r=>{r.onclick=e=>{e.stopPropagation();openRubyModal(r);};r.title='編集する';});}
