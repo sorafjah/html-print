@@ -106,7 +106,11 @@
         <div class="flex justify-center p-4 min-h-0 flex-1 overflow-y-auto relative" id="preview-scroll-inner">
             <div id="preview-container" class="page-hp preview-content" spellcheck="false"></div>
             <iframe id="web-iframe" sandbox="allow-same-origin allow-scripts" style="width:100%;height:100%;border:none;background:white;"></iframe>
-            <button id="add-ruby-btn" onmousedown="event.preventDefault(); event.stopPropagation();" onclick="addRubyToSelection()"><i class="fas fa-plus mr-1"></i>ルビ追加</button>
+            <button id="add-ruby-btn"
+                onmousedown="event.preventDefault(); event.stopPropagation();"
+                onclick="addRubyToSelection()">
+                <i class="fas fa-plus mr-1"></i>ルビ追加
+            </button>
         </div>
     </div>
 </div>
@@ -198,8 +202,8 @@ let currentMode = 'web';
 let editorCursorPos = null, previewInsertRange = null;
 let aspectLocked = false, aspectRatio = null, changingFrom = null;
 let addRubyRange = null;
+let addRubyBtnVisible = false; // ボタンが表示中かを追跡
 
-// Enterでdivを使うよう設定
 try { document.execCommand('defaultParagraphSeparator', false, 'div'); } catch(e) {}
 
 editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
@@ -246,24 +250,20 @@ function setMode(mode) {
         preview.classList.add('ruby-edit-mode'); preview.classList.remove('text-edit-mode');
         previewHint.textContent = 'クリックでルビ編集 / テキスト選択でルビ追加';
         updatePreview();
-    } else { // text
+    } else {
         preview.classList.remove('hidden'); webIframe.classList.add('hidden');
         preview.classList.remove('ruby-edit-mode'); preview.classList.add('text-edit-mode');
         previewHint.textContent = 'テキストを直接編集（モード切替で反映）';
         preview.querySelectorAll('ruby').forEach(r => { r.onclick = null; });
-        // HTMLをdivベースに変換してcontentEditableに設定
         enterTextEditMode();
     }
 }
 
-// ===================== テキスト編集モード：divベース変換 =====================
+// ===================== テキスト編集モード =====================
 function enterTextEditMode() {
-    // まずsmartBrConvertでHTMLを準備
     const html = smartBrConvert(editor.value);
-    // 一時divにパースしてDOM操作
     const tmp = document.createElement('div');
     tmp.innerHTML = html;
-    // 直下ノードを走査して<br>で区切り、divにまとめる
     const blockTags = new Set(['TABLE','DIV','UL','OL','DL','PRE','BLOCKQUOTE','H1','H2','H3','H4','H5','H6','HR','P']);
     const nodes = Array.from(tmp.childNodes);
     const fragment = document.createDocumentFragment();
@@ -284,11 +284,8 @@ function enterTextEditMode() {
 
     for (const node of nodes) {
         if (node.nodeName === 'BR') {
-            if (buf.length === 0) {
-                addEmptyDiv();
-            } else {
-                flushBuf();
-            }
+            if (buf.length === 0) addEmptyDiv();
+            else flushBuf();
         } else if (node.nodeType === 1 && blockTags.has(node.nodeName)) {
             flushBuf();
             fragment.appendChild(node);
@@ -297,8 +294,6 @@ function enterTextEditMode() {
         }
     }
     flushBuf();
-
-    // fragmentが空なら空行を1つ
     if (fragment.childNodes.length === 0) addEmptyDiv();
 
     preview.innerHTML = '';
@@ -310,44 +305,29 @@ function enterTextEditMode() {
 // ===================== テキスト編集→エディタ同期 =====================
 function syncTextModeToEditor() {
     const c = preview.cloneNode(true);
-    // ハイライト除去
     c.querySelectorAll('.cross-highlight').forEach(el => {
         const p = el.parentNode;
         while (el.firstChild) p.insertBefore(el.firstChild, el);
         p.removeChild(el);
     });
-
-    // table内brは保持マーカーに
-    c.querySelectorAll('table br').forEach(br => {
-        br.replaceWith(document.createTextNode('\x00TDBR\x00'));
-    });
-
-    // 直下の子要素を処理
+    c.querySelectorAll('table br').forEach(br => br.replaceWith(document.createTextNode('\x00TDBR\x00')));
     const lines = [];
     const blockTags = new Set(['TABLE','UL','OL','DL','PRE','BLOCKQUOTE','H1','H2','H3','H4','H5','H6','HR','P']);
 
     for (const child of Array.from(c.childNodes)) {
         if (child.nodeType === 1 && child.nodeName === 'DIV' && !child.hasAttributes()) {
-            // テキスト編集用のdiv → 中身を1行として取得
-            // 中のbrを除去（末尾の空行用br）
             child.querySelectorAll('br').forEach(br => {
-                // 子が<br>のみの場合は空行
-                if (child.childNodes.length === 1 && child.firstChild === br) {
+                if (child.childNodes.length === 1 && child.firstChild === br)
                     br.replaceWith(document.createTextNode(''));
-                } else {
+                else
                     br.replaceWith(document.createTextNode('\x00INNERBR\x00'));
-                }
             });
             lines.push(child.innerHTML);
         } else if (child.nodeType === 1 && blockTags.has(child.nodeName)) {
-            // ブロック要素はそのままHTMLとして
-            // 中のbrは改行タグとして残す
             lines.push(child.outerHTML);
         } else if (child.nodeType === 1 && child.nodeName === 'DIV' && child.hasAttributes()) {
-            // 属性付きdiv（画像配置用など）はそのまま
             lines.push(child.outerHTML);
         } else if (child.nodeType === 3) {
-            // テキストノード（通常ないが念のため）
             const t = child.textContent;
             if (t.trim()) lines.push(t);
         } else {
@@ -358,53 +338,90 @@ function syncTextModeToEditor() {
     let result = lines.join('\n');
     result = result.replace(/\x00TDBR\x00/g, '<br>');
     result = result.replace(/\x00INNERBR\x00/g, '<br>');
-    // 3つ以上の連続改行を2つに
     result = result.replace(/\n{3,}/g, '\n\n');
     editor.value = result;
 }
 
 // ===================== ルビ追加ボタン =====================
-function hideAddRubyBtn() { addRubyBtn.style.display = 'none'; addRubyRange = null; }
+function hideAddRubyBtn() {
+    addRubyBtn.style.display = 'none';
+    addRubyBtnVisible = false;
+    addRubyRange = null;
+}
 
-document.addEventListener('selectionchange', () => {
-    if (currentMode !== 'ruby') { hideAddRubyBtn(); return; }
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
-    const r = sel.getRangeAt(0);
-    if (!preview.contains(r.commonAncestorContainer)) { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
-    const txt = sel.toString().trim();
-    if (!txt) { hideAddRubyBtn(); return; }
-    let node = r.commonAncestorContainer;
-    while (node && node !== preview) {
-        if (node.nodeName === 'RUBY') { hideAddRubyBtn(); capturePreviewSelectionRange(); return; }
-        node = node.parentNode;
-    }
-    addRubyRange = r.cloneRange();
-    const rect = r.getBoundingClientRect();
+function showAddRubyBtn(range) {
+    addRubyRange = range.cloneRange();
+    lastRange = range.cloneRange();
+    const rect = range.getBoundingClientRect();
     const container = document.getElementById('preview-scroll-inner');
     const cRect = container.getBoundingClientRect();
     addRubyBtn.style.display = 'block';
-    addRubyBtn.style.left = (rect.left + rect.width/2 - cRect.left - 40) + 'px';
+    addRubyBtn.style.left = (rect.left + rect.width / 2 - cRect.left - 40) + 'px';
     addRubyBtn.style.top = (rect.top - cRect.top - 32 + container.scrollTop) + 'px';
-    lastRange = r.cloneRange();
+    addRubyBtnVisible = true;
+}
+
+// mouseup でボタンを表示（selectionchange より安定）
+preview.addEventListener('mouseup', (e) => {
+    if (currentMode !== 'ruby') return;
+    // ボタン自体のクリックは無視
+    if (e.target === addRubyBtn || addRubyBtn.contains(e.target)) return;
+
+    setTimeout(() => {
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0 || sel.isCollapsed) {
+            hideAddRubyBtn();
+            return;
+        }
+        const r = sel.getRangeAt(0);
+        if (!preview.contains(r.commonAncestorContainer)) {
+            hideAddRubyBtn();
+            return;
+        }
+        const txt = sel.toString().trim();
+        if (!txt) {
+            hideAddRubyBtn();
+            return;
+        }
+        // ruby要素内の選択は無視
+        let node = r.commonAncestorContainer;
+        while (node && node !== preview) {
+            if (node.nodeName === 'RUBY') { hideAddRubyBtn(); return; }
+            node = node.parentNode;
+        }
+        showAddRubyBtn(r);
+        capturePreviewSelectionRange();
+    }, 10);
+});
+
+// ドキュメント全体のmousedownでボタンを隠す（ただしボタン自体とモーダルは除く）
+document.addEventListener('mousedown', (e) => {
+    if (!addRubyBtnVisible) return;
+    if (e.target === addRubyBtn || addRubyBtn.contains(e.target)) return;
+    if (document.getElementById('add-ruby-modal').contains(e.target)) return;
+    hideAddRubyBtn();
 });
 
 function addRubyToSelection() {
     if (!addRubyRange) return;
     const txt = addRubyRange.toString().trim();
     if (!txt) return;
-    hideAddRubyBtn();
     document.getElementById('add-ruby-kanji').textContent = txt;
     document.getElementById('add-ruby-input').value = '';
     document.getElementById('add-ruby-modal').classList.remove('hidden');
     document.getElementById('add-ruby-modal').classList.add('flex');
     setTimeout(() => document.getElementById('add-ruby-input').focus(), 50);
+    // ボタンは閉じるまで表示したままにする（モーダルが開いているのでOK）
+    addRubyBtn.style.display = 'none';
 }
+
 function closeAddRubyModal() {
     document.getElementById('add-ruby-modal').classList.add('hidden');
     document.getElementById('add-ruby-modal').classList.remove('flex');
     addRubyRange = null;
+    addRubyBtnVisible = false;
 }
+
 function confirmAddRuby() {
     const reading = document.getElementById('add-ruby-input').value.trim();
     if (!reading) { document.getElementById('add-ruby-input').focus(); return; }
@@ -421,6 +438,7 @@ function confirmAddRuby() {
     attachRubyClickEvents();
     closeAddRubyModal();
 }
+
 document.getElementById('add-ruby-input').addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); confirmAddRuby(); }
 });
