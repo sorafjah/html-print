@@ -48,6 +48,16 @@
             border: 5px solid transparent; border-top-color: #3b82f6;
         }
         .cross-highlight { background-color: #fef08a; border-radius: 2px; }
+
+        /* テキスト編集モードのキーボードヒント */
+        .text-edit-hint {
+            font-size: 0.65rem;
+            color: #9ca3af;
+            background: #f3f4f6;
+            border-radius: 4px;
+            padding: 1px 6px;
+            border: 1px solid #e5e7eb;
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
@@ -85,7 +95,13 @@
         <button onmousedown="event.preventDefault()" onclick="wrapColor('red')" class="p-1.5 hover:bg-gray-100 rounded text-red-500" title="赤文字"><i class="fas fa-font"></i></button>
     </div>
     <div class="flex items-center border-r pr-3 gap-1">
-        <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition"><i class="fas fa-image"></i> 画像挿入</button>
+        <!-- 画像挿入ボタン：他のボタンと同じトーンに統一 -->
+        <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 p-1.5 hover:bg-gray-100 rounded text-gray-700" title="画像挿入"><i class="fas fa-image"></i></button>
+    </div>
+    <!-- テキスト編集モード時のヒント表示 -->
+    <div id="text-edit-hint-area" class="hidden items-center gap-2 text-xs text-gray-400">
+        <span class="text-edit-hint"><kbd>Enter</kbd> → 段落 &lt;p&gt;</span>
+        <span class="text-edit-hint"><kbd>Shift+Enter</kbd> → 改行 &lt;br&gt;</span>
     </div>
 </div>
 
@@ -199,6 +215,7 @@ const baseFontSizeInput = document.getElementById('base-font-size');
 const webIframe = document.getElementById('web-iframe');
 const previewHint = document.getElementById('preview-hint');
 const addRubyBtn = document.getElementById('add-ruby-btn');
+const textEditHintArea = document.getElementById('text-edit-hint-area');
 
 let currentTargetRuby = null, lastRange = null;
 let currentMode = 'web';
@@ -242,6 +259,15 @@ function setMode(mode) {
     document.getElementById('btn-mode-text').classList.toggle('active', mode === 'text');
     hideAddRubyBtn();
 
+    // テキスト編集ヒントの表示切替
+    if (mode === 'text') {
+        textEditHintArea.classList.remove('hidden');
+        textEditHintArea.classList.add('flex');
+    } else {
+        textEditHintArea.classList.add('hidden');
+        textEditHintArea.classList.remove('flex');
+    }
+
     if (mode === 'web') {
         preview.classList.add('hidden'); webIframe.classList.remove('hidden');
         preview.contentEditable = 'false';
@@ -263,18 +289,56 @@ function setMode(mode) {
 }
 
 // ===================== テキスト編集モード =====================
-// HTMLの構造をそのまま保持してcontenteditable化する
 function enterTextEditMode() {
-    // エディタのHTMLをそのままpreviewに流し込む（smartBrConvertは使わない）
     preview.innerHTML = editor.value;
-    // ruby要素のクリックイベントを無効化
     preview.querySelectorAll('ruby').forEach(r => { r.onclick = null; });
     preview.contentEditable = 'true';
     preview.focus();
 }
 
+// ===================== テキスト編集モードのキーボード操作 =====================
+// Enter → <p> 段落区切り、Shift+Enter → <br> 改行
+preview.addEventListener('keydown', (e) => {
+    if (currentMode !== 'text') return;
+
+    if (e.key === 'Enter') {
+        e.preventDefault();
+
+        const sel = window.getSelection();
+        if (!sel || sel.rangeCount === 0) return;
+
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+
+        if (e.shiftKey) {
+            // Shift+Enter → <br> 挿入
+            const br = document.createElement('br');
+            range.insertNode(br);
+            br.parentNode.insertBefore(document.createTextNode(''), br.nextSibling);
+            const newRange = document.createRange();
+            if (br.nextSibling) {
+                newRange.setStartBefore(br.nextSibling);
+            } else {
+                newRange.setStartAfter(br);
+            }
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        } else {
+            // Enter → <p> 段落区切り
+            const p = document.createElement('p');
+            p.appendChild(document.createElement('br')); // 空段落にはbrが必要
+            range.insertNode(p);
+            const newRange = document.createRange();
+            newRange.setStart(p, 0);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+        }
+    }
+});
+
 // ===================== テキスト編集→エディタ同期 =====================
-// previewのDOMをシリアライズしてエディタに戻す
 function syncTextModeToEditor() {
     const c = preview.cloneNode(true);
 
@@ -285,17 +349,14 @@ function syncTextModeToEditor() {
         p.removeChild(el);
     });
 
-    // contenteditable が付いた要素を除去
     c.removeAttribute('contenteditable');
     c.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
 
-    // class属性の掃除（text-edit-mode / ruby-edit-mode は除去）
     ['text-edit-mode', 'ruby-edit-mode', 'preview-content', 'page-hp'].forEach(cls => {
         c.classList.remove(cls);
     });
 
     editor.value = c.innerHTML
-        // ブラウザが挿入する余分な属性などを整理
         .replace(/ class=""/g, '')
         .replace(/ style=""/g, '');
 }
@@ -526,8 +587,7 @@ function insertImage() {
 // ===================== プレビュー更新 =====================
 function updatePreview() {
     if (currentMode === 'web') { updateWebIframe(); return; }
-    if (currentMode === 'text') return; // テキスト編集中はエディタから上書きしない
-    // ルビ編集モード：HTMLをそのまま流し込む
+    if (currentMode === 'text') return;
     preview.innerHTML = editor.value;
     attachRubyClickEvents();
 }
