@@ -579,8 +579,21 @@ function buildImgTag(src) {
 function insertImage() {
     const src=document.getElementById('img-url-input').value.trim(); if(!src){alert('URLを入力してください');return;}
     const tag=buildImgTag(src);
-    if(previewInsertRange){const d=document.createElement('div');d.innerHTML=tag;const f=document.createDocumentFragment();while(d.firstChild)f.appendChild(d.firstChild);previewInsertRange.insertNode(f);previewInsertRange=null;syncPreviewToEditor();}
-    else{const p=(editorCursorPos!==null)?editorCursorPos:editor.value.length;editor.value=editor.value.substring(0,p)+tag+editor.value.substring(p);editorCursorPos=p+tag.length;editor.selectionStart=editor.selectionEnd=editorCursorPos;editor.focus();}
+    // テキスト編集モードは常にエディタへ直接挿入して確実にstyle属性を保持
+    if(currentMode === 'text' || !previewInsertRange){
+        const p=(editorCursorPos!==null)?editorCursorPos:editor.value.length;
+        editor.value=editor.value.substring(0,p)+tag+editor.value.substring(p);
+        editorCursorPos=p+tag.length;
+        editor.selectionStart=editor.selectionEnd=editorCursorPos;
+        // テキスト編集モードならプレビューも再同期
+        if(currentMode === 'text') enterTextEditMode();
+        else editor.focus();
+    } else {
+        const d=document.createElement('div');d.innerHTML=tag;
+        const f=document.createDocumentFragment();while(d.firstChild)f.appendChild(d.firstChild);
+        previewInsertRange.insertNode(f);previewInsertRange=null;
+        syncPreviewToEditor();
+    }
     closeImgModal(); updatePreview();
 }
 
@@ -603,7 +616,7 @@ function stepFontSize(d) {
 
 function updateWebIframe() {
     const sz = parseInt(baseFontSizeInput.value) || 12;
-    webIframe.srcdoc = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>body{font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;font-size:${sz}pt;line-height:2.0;padding:1.5rem;margin:0;overflow-wrap:break-word;}table{border-collapse:collapse;margin:0.5em 0;}th,td{border:1px solid #999;padding:4px 8px;}th{background:#f3f4f6;font-weight:bold;}ruby{display:inline-ruby;}rt{font-size:0.5em;line-height:1;color:#555;}img{max-width:100%;display:inline-block;vertical-align:middle;}</style></head><body>${editor.value}</body></html>`;
+    webIframe.srcdoc = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>body{font-family:"BIZ UDPGothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;font-size:${sz}pt;line-height:2.0;padding:1.5rem;margin:0;overflow-wrap:break-word;}table{border-collapse:collapse;margin:0.5em 0;}th,td{border:1px solid #999;padding:4px 8px;}th{background:#f3f4f6;font-weight:bold;}ruby{display:inline-ruby;}rt{font-size:0.5em;line-height:1;color:#555;}img:not([style*="width"]){max-width:100%;}img{display:inline-block;vertical-align:middle;}</style></head><body>${editor.value}</body></html>`;
 }
 function openInNewTab() {
     const sz = parseInt(baseFontSizeInput.value) || 12;
