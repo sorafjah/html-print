@@ -24,20 +24,16 @@
         #preview-container table { border-collapse: collapse; margin: 0.5em 0; }
         #preview-container th, #preview-container td { border: 1px solid #999; padding: 4px 8px; }
         #preview-container th { background: #f3f4f6; font-weight: bold; }
-        /* 【修正1】プレビューコンテナ内の画像にもmax-width制限を追加 */
         #preview-container img { max-width: 100%; display: inline-block; vertical-align: middle; }
         #web-iframe { width: 100%; height: 100%; border: none; background: white; }
         .mode-btn { padding: 4px 14px; border-radius: 9999px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.15s; }
         .mode-btn.active { background: #3b82f6; color: white; }
         .mode-btn:not(.active) { background: #e5e7eb; color: #374151; }
         .mode-btn:not(.active):hover { background: #d1d5db; }
-
-        /* テキスト編集モード：構造を壊さずcontenteditable */
         .text-edit-mode { cursor: text; outline: none; }
         .text-edit-mode:focus { outline: none; }
         .text-edit-mode ruby { cursor: text !important; border-bottom: none !important; }
         .text-edit-mode ruby:hover { background-color: transparent !important; }
-
         #add-ruby-btn {
             position: absolute; z-index: 100; display: none;
             background: #3b82f6; color: white; border: none; border-radius: 6px;
@@ -50,8 +46,6 @@
             border: 5px solid transparent; border-top-color: #3b82f6;
         }
         .cross-highlight { background-color: #fef08a; border-radius: 2px; }
-
-        /* テキスト編集モードのキーボードヒント */
         .text-edit-hint {
             font-size: 0.65rem;
             color: #9ca3af;
@@ -67,6 +61,10 @@
 <header class="bg-white shadow-sm z-10 p-3 flex justify-between items-center shrink-0">
     <h1 class="text-xl font-bold text-gray-700">ルビふりお2</h1>
     <div class="flex gap-2">
+        <!-- ▼ 追加: HTMLファイルを開くボタン -->
+        <input type="file" id="open-html-input" accept=".html,.htm" class="hidden" onchange="openHtmlFile(event)">
+        <button onclick="document.getElementById('open-html-input').click()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded text-sm transition"><i class="fas fa-folder-open mr-1"></i> HTMLを開く</button>
+        <!-- ▲ 追加ここまで -->
         <button onclick="openInNewTab()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-sm transition">WEBサイトで表示</button>
         <button onclick="copyHtml()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm transition"><i class="fas fa-code mr-1"></i> HTMLコピー</button>
     </div>
@@ -99,7 +97,6 @@
     <div class="flex items-center border-r pr-3 gap-1">
         <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 p-1.5 hover:bg-gray-100 rounded text-gray-700" title="画像挿入"><i class="fas fa-image"></i></button>
     </div>
-    <!-- テキスト編集モード時のヒント表示 -->
     <div id="text-edit-hint-area" class="hidden items-center gap-2 text-xs text-gray-400">
         <span class="text-edit-hint"><kbd>Enter</kbd> → 段落 &lt;p&gt;</span>
         <span class="text-edit-hint"><kbd>Shift+Enter</kbd> → 改行 &lt;br&gt;</span>
@@ -142,12 +139,10 @@
             <h3 class="font-bold text-lg text-gray-700"><i class="fas fa-image mr-2 text-purple-500"></i>画像を挿入</h3>
             <button onclick="closeImgModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
         </div>
-        <!-- タブ切り替え -->
         <div class="flex gap-1 mb-3">
             <button id="img-tab-url" onclick="switchImgTab('url')" class="px-3 py-1 text-xs font-bold rounded-t border border-b-0 bg-white text-purple-600 border-purple-300"><i class="fas fa-link mr-1"></i>URL</button>
             <button id="img-tab-file" onclick="switchImgTab('file')" class="px-3 py-1 text-xs font-bold rounded-t border border-b-0 bg-gray-100 text-gray-500 border-gray-200"><i class="fas fa-folder-open mr-1"></i>ローカルファイル</button>
         </div>
-        <!-- URL入力パネル -->
         <div id="img-panel-url" class="mb-3">
             <input id="img-url-input" type="text" class="w-full border border-gray-300 rounded p-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-purple-300" placeholder="https://example.com/image.png" oninput="previewImgUrl()">
             <div id="url-preview-wrap" class="flex justify-center bg-gray-100 rounded p-2 min-h-[80px] items-center">
@@ -155,7 +150,6 @@
                 <span id="url-preview-placeholder" class="text-gray-400 text-xs">URLを入力するとプレビューが表示されます</span>
             </div>
         </div>
-        <!-- ローカルファイルパネル -->
         <div id="img-panel-file" class="mb-3 hidden">
             <label id="file-drop-zone" class="flex flex-col items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-4 min-h-[120px] cursor-pointer hover:border-purple-400 hover:bg-purple-50 transition">
                 <input type="file" id="img-file-input" accept="image/*" class="hidden" onchange="handleFileSelect(event)">
@@ -268,6 +262,25 @@ window.addEventListener('DOMContentLoaded', () => {
     updateWebIframe();
 });
 
+// ===================== HTMLファイルを開く =====================
+function openHtmlFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const text = e.target.result;
+        // <body>〜</body> の中身があればそこだけ抽出、なければ全文をそのまま使う
+        const bodyMatch = text.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        editor.value = bodyMatch ? bodyMatch[1].trim() : text;
+        // モードをWEBプレビューに戻してプレビュー更新
+        setMode('web');
+        updatePreview();
+    };
+    reader.readAsText(file, 'UTF-8');
+    // 同じファイルを再選択できるようにリセット
+    event.target.value = '';
+}
+
 // ===================== モード切替 =====================
 function setMode(mode) {
     if (currentMode === 'text' && mode !== 'text') {
@@ -320,26 +333,18 @@ function enterTextEditMode() {
 // ===================== テキスト編集モードのキーボード操作 =====================
 preview.addEventListener('keydown', (e) => {
     if (currentMode !== 'text') return;
-
     if (e.key === 'Enter') {
         e.preventDefault();
-
         const sel = window.getSelection();
         if (!sel || sel.rangeCount === 0) return;
-
         const range = sel.getRangeAt(0);
         range.deleteContents();
-
         if (e.shiftKey) {
             const br = document.createElement('br');
             range.insertNode(br);
             br.parentNode.insertBefore(document.createTextNode(''), br.nextSibling);
             const newRange = document.createRange();
-            if (br.nextSibling) {
-                newRange.setStartBefore(br.nextSibling);
-            } else {
-                newRange.setStartAfter(br);
-            }
+            if (br.nextSibling) { newRange.setStartBefore(br.nextSibling); } else { newRange.setStartAfter(br); }
             newRange.collapse(true);
             sel.removeAllRanges();
             sel.addRange(newRange);
@@ -359,20 +364,14 @@ preview.addEventListener('keydown', (e) => {
 // ===================== テキスト編集→エディタ同期 =====================
 function syncTextModeToEditor() {
     const c = preview.cloneNode(true);
-
     c.querySelectorAll('.cross-highlight').forEach(el => {
         const p = el.parentNode;
         while (el.firstChild) p.insertBefore(el.firstChild, el);
         p.removeChild(el);
     });
-
     c.removeAttribute('contenteditable');
     c.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
-
-    ['text-edit-mode', 'ruby-edit-mode', 'preview-content', 'page-hp'].forEach(cls => {
-        c.classList.remove(cls);
-    });
-
+    ['text-edit-mode', 'ruby-edit-mode', 'preview-content', 'page-hp'].forEach(cls => { c.classList.remove(cls); });
     editor.value = c.innerHTML
         .replace(/ class=""/g, '')
         .replace(/ style=""/g, '');
@@ -566,12 +565,9 @@ function onImgSizeInput(from) {
 function openImgModal() {
     if (!previewInsertRange) editorCursorPos = editor.selectionStart;
     const m = document.getElementById('img-modal'); m.classList.remove('hidden'); m.classList.add('flex');
-    // URLタブリセット
     document.getElementById('img-url-input').value=''; document.getElementById('url-preview-img').classList.add('hidden');
     document.getElementById('url-preview-placeholder').textContent='URLを入力するとプレビューが表示されます'; document.getElementById('url-preview-placeholder').classList.remove('hidden');
-    // ファイルタブリセット
     clearFileSelection(null);
-    // タブをURLに戻す
     switchImgTab('url');
     ['img-width','img-height'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('img-align').value=''; document.getElementById('img-alt').value='';
@@ -599,7 +595,6 @@ function buildImgTag(src) {
     return tag;
 }
 
-// 【修正2】insertImage: テキスト編集モード対応 + ローカルファイル対応
 let currentImgTab = 'url';
 let localFileDataUrl = null;
 
@@ -632,7 +627,6 @@ function processFile(file) {
     const reader = new FileReader();
     reader.onload = (ev) => {
         localFileDataUrl = ev.target.result;
-        // プレビュー表示
         document.getElementById('file-drop-content').classList.add('hidden');
         const area = document.getElementById('file-preview-area');
         area.classList.remove('hidden');
@@ -653,7 +647,6 @@ function clearFileSelection(e) {
     document.getElementById('file-clear-btn').classList.add('hidden');
 }
 
-// ドラッグ&ドロップ
 document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('file-drop-zone');
     if (!dropZone) return;
@@ -666,22 +659,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function getImageSrc() {
-    if (currentImgTab === 'file') {
-        return localFileDataUrl || '';
-    }
+    if (currentImgTab === 'file') { return localFileDataUrl || ''; }
     return document.getElementById('img-url-input').value.trim();
 }
 
 function insertImage() {
     const src = getImageSrc();
-    if (!src) {
-        alert(currentImgTab === 'file' ? 'ファイルを選択してください' : 'URLを入力してください');
-        return;
-    }
+    if (!src) { alert(currentImgTab === 'file' ? 'ファイルを選択してください' : 'URLを入力してください'); return; }
     const tag=buildImgTag(src);
-
     if (currentMode === 'text') {
-        // テキスト編集モード: プレビューDOMに直接挿入し、テキスト編集用の同期を使う
         if (previewInsertRange) {
             const d=document.createElement('div'); d.innerHTML=tag;
             const f=document.createDocumentFragment();
@@ -689,16 +675,13 @@ function insertImage() {
             previewInsertRange.insertNode(f);
             previewInsertRange=null;
         } else {
-            // プレビュー内にカーソルがない場合は末尾に追加
             const d=document.createElement('div'); d.innerHTML=tag;
             const f=document.createDocumentFragment();
             while(d.firstChild) f.appendChild(d.firstChild);
             preview.appendChild(f);
         }
-        // テキスト編集モード用の同期でエディタに反映
         syncTextModeToEditor();
     } else if (previewInsertRange) {
-        // ルビ編集モード等でプレビュー内にカーソルがある場合
         const d=document.createElement('div'); d.innerHTML=tag;
         const f=document.createDocumentFragment();
         while(d.firstChild) f.appendChild(d.firstChild);
@@ -706,16 +689,13 @@ function insertImage() {
         previewInsertRange=null;
         syncPreviewToEditor();
     } else {
-        // エディタに直接挿入
         const p=(editorCursorPos!==null)?editorCursorPos:editor.value.length;
         editor.value=editor.value.substring(0,p)+tag+editor.value.substring(p);
         editorCursorPos=p+tag.length;
         editor.selectionStart=editor.selectionEnd=editorCursorPos;
         editor.focus();
     }
-
     closeImgModal();
-    // テキスト編集モード以外はプレビュー更新
     if (currentMode !== 'text') updatePreview();
 }
 
