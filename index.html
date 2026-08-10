@@ -46,6 +46,21 @@
             border: 5px solid transparent; border-top-color: #3b82f6;
         }
         .cross-highlight { background-color: #fef08a; border-radius: 2px; }
+        .kanji-jump-target { background-color: #fee2e2; outline: 2px solid #f87171; border-radius: 3px; }
+        /* 改行(br)を編集中に見やすくする印。印刷やHTML出力には含まれない（CSSのみで表示するため） */
+        .text-edit-mode br::before {
+            content: '↵ 改行';
+            display: inline-block;
+            background: #dbeafe;
+            color: #2563eb;
+            font-size: 0.65em;
+            font-weight: bold;
+            border-radius: 4px;
+            padding: 1px 5px;
+            margin: 0 2px;
+            vertical-align: middle;
+            user-select: none;
+        }
         .text-edit-hint {
             font-size: 0.65rem;
             color: #9ca3af;
@@ -54,6 +69,10 @@
             padding: 1px 6px;
             border: 1px solid #e5e7eb;
         }
+        .help-kbd {
+            display: inline-block; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 4px;
+            padding: 1px 6px; font-size: 0.75rem; font-family: monospace; color: #374151;
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-screen flex flex-col overflow-hidden">
@@ -61,12 +80,14 @@
 <header class="bg-white shadow-sm z-10 p-3 flex justify-between items-center shrink-0">
     <h1 class="text-xl font-bold text-gray-700">ルビふりお2</h1>
     <div class="flex gap-2">
+        <button onclick="openHelpModal()" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm transition"><i class="fas fa-circle-question mr-1"></i> 使い方</button>
         <!-- ▼ 追加: HTMLファイルを開くボタン -->
         <input type="file" id="open-html-input" accept=".html,.htm" class="hidden" onchange="openHtmlFile(event)">
-        <button onclick="document.getElementById('open-html-input').click()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-1.5 rounded text-sm transition"><i class="fas fa-folder-open mr-1"></i> HTMLを開く</button>
+        <button onclick="document.getElementById('open-html-input').click()" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm transition"><i class="fas fa-folder-open mr-1"></i> HTMLを開く</button>
         <!-- ▲ 追加ここまで -->
-        <button onclick="openInNewTab()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-1.5 rounded text-sm transition">WEBサイトで表示</button>
-        <button onclick="copyHtml()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded text-sm transition"><i class="fas fa-code mr-1"></i> HTMLコピー</button>
+        <button onclick="openInNewTab()" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm transition">WEBサイトで表示</button>
+        <button onclick="downloadHtml()" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm transition"><i class="fas fa-download mr-1"></i> ファイル保存</button>
+        <button onclick="copyHtml()" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-1.5 rounded text-sm transition"><i class="fas fa-code mr-1"></i> HTMLコピー</button>
     </div>
 </header>
 
@@ -97,9 +118,10 @@
     <div class="flex items-center border-r pr-3 gap-1">
         <button onmousedown="event.preventDefault()" onclick="openImgModal()" class="flex items-center gap-1 p-1.5 hover:bg-gray-100 rounded text-gray-700" title="画像挿入"><i class="fas fa-image"></i></button>
     </div>
-    <div id="text-edit-hint-area" class="hidden items-center gap-2 text-xs text-gray-400">
-        <span class="text-edit-hint"><kbd>Enter</kbd> → 段落 &lt;p&gt;</span>
-        <span class="text-edit-hint"><kbd>Shift+Enter</kbd> → 改行 &lt;br&gt;</span>
+    <div id="ruby-jump-area" class="hidden items-center gap-2 border-r pr-3">
+        <button onmousedown="event.preventDefault()" onclick="jumpToNextUnrubiedKanji()" class="flex items-center gap-1 px-2 py-1 bg-red-50 hover:bg-red-100 text-red-600 rounded text-xs font-bold border border-red-200" title="ルビがまだない漢字を探す">
+            <i class="fas fa-magnifying-glass"></i> 未ルビ漢字へジャンプ
+        </button>
     </div>
 </div>
 
@@ -128,6 +150,66 @@
                 onclick="addRubyToSelection()">
                 <i class="fas fa-plus mr-1"></i>ルビ追加
             </button>
+        </div>
+    </div>
+</div>
+
+<!-- 使い方モーダル -->
+<div id="help-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl p-6 w-[560px] max-h-[85vh] overflow-y-auto shadow-2xl relative">
+        <div class="flex justify-between items-center mb-4 sticky top-0 bg-white pb-2 border-b">
+            <h3 class="font-bold text-lg text-gray-700"><i class="fas fa-circle-question mr-2 text-indigo-500"></i>使い方</h3>
+            <button onclick="closeHelpModal()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+        </div>
+        <div class="text-sm text-gray-700 space-y-4 leading-relaxed">
+            <div class="bg-indigo-50 border border-indigo-200 rounded p-3">
+                <p class="font-bold text-indigo-700 mb-1"><i class="fas fa-wand-magic-sparkles mr-1"></i>まず最初に：ふりがなはAIに付けてもらう</p>
+                <p class="text-gray-700">このツールは<span class="font-bold">「ゼロからルビを打つ」道具ではなく「AIが付けたルビを最終調整する」道具</span>です。まずGeminiやClaudeなどのAIに文章を渡して「<span class="font-bold">&lt;ruby&gt;漢字&lt;rt&gt;ふりがな&lt;/rt&gt;&lt;/ruby&gt; の形式で、この文章の漢字すべてにルビを振ってください</span>」のように依頼し、できあがったHTMLをこの画面の左側に貼り付けてください。そのあと、読み間違えている部分や学年に合わないふりがなだけを、このツールで手直しします。ゼロから全部を人力で打つより、はるかに早く終わります。</p>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 mb-1"><i class="fas fa-1 mr-1 text-indigo-400"></i>基本の流れ</p>
+                <ol class="list-decimal pl-5 space-y-1">
+                    <li>AIにふりがな付きのHTMLを作ってもらう</li>
+                    <li>左側の入力欄に貼り付ける、または「HTMLを開く」でファイルを読み込む</li>
+                    <li>右側のプレビューを見ながら「ルビ編集」モードで間違い・不要なルビを直す</li>
+                    <li>「ファイル保存」でHTMLファイルとして保存、または「HTMLコピー」でコピー</li>
+                </ol>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 mb-1"><i class="fas fa-2 mr-1 text-indigo-400"></i>3つの表示モード</p>
+                <ul class="list-disc pl-5 space-y-1">
+                    <li><span class="font-bold">WEBプレビュー</span>：HTMLをそのまま表示するだけ。編集はできません。</li>
+                    <li><span class="font-bold">ルビ編集</span>：文章中の <span class="help-kbd">&lt;ruby&gt;</span> をクリックしてふりがなを編集できます。文字を選択すると「ルビ追加」ボタンが出て、新しくルビをつけられます。</li>
+                    <li><span class="font-bold">テキスト編集</span>：プレビュー画面を直接クリックして文字を打てます。<span class="help-kbd">Enter</span>で改段落、<span class="help-kbd">Shift+Enter</span>で改行です。</li>
+                </ul>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 mb-1"><i class="fas fa-3 mr-1 text-indigo-400"></i>ルビの手直し</p>
+                <p>「ルビ編集」モードにして、ルビをつけたい文字をドラッグで選択すると、選択箇所の上に「ルビ追加」ボタンが出ます。押すとふりがな入力欄が出るので入力して「追加」。すでにルビがついている文字はクリックすると編集モーダルが開き、<span class="help-kbd">Enter</span>キーで次のルビへ次々と進めます。ツールバーの<span class="font-bold">「未ルビ漢字へジャンプ」</span>ボタンを押すと、まだルビが付いていない漢字を自動で探してハイライトしてくれるので、AIの付け忘れをチェックするときに便利です。</p>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 mb-1"><i class="fas fa-4 mr-1 text-indigo-400"></i>文字の装飾・画像</p>
+                <p>上部ツールバーで文字を選択してから「太字」「赤文字」「フォント変更」を押すと反映されます（ルビ編集・テキスト編集モードで使用）。画像アイコンから、URL指定またはパソコン内のファイルを選んで挿入できます。サイズや配置（中央揃え・左回り込みなど）も指定可能です。</p>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 mb-1"><i class="fas fa-5 mr-1 text-indigo-400"></i>元に戻す</p>
+                <p>ルビ編集・テキスト編集での変更は<span class="help-kbd">Ctrl+Z</span>（Macは<span class="help-kbd">⌘+Z</span>）で元に戻せます。やり直しは<span class="help-kbd">Ctrl+Shift+Z</span>です。左側のHTMLソース欄を直接編集しているときは、そちらにカーソルがあればブラウザ標準のUndoがそのまま使えます。</p>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 mb-1"><i class="fas fa-6 mr-1 text-indigo-400"></i>保存・出力</p>
+                <p><span class="font-bold">ファイル保存</span>：作業中の内容をHTMLファイルとしてパソコンにダウンロードします。閉じてしまう前に保存しておくと安心です。<span class="font-bold">HTMLコピー</span>：左側のHTMLソースをクリップボードにコピーします。<span class="font-bold">WEBサイトで表示</span>：完成形を新しいタブで開けます。</p>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800 mb-1"><i class="fas fa-7 mr-1 text-indigo-400"></i>改行のしかた</p>
+                <p>改行は「テキスト編集」モードでできます。<span class="help-kbd">Enter</span>で段落が変わる改行（&lt;p&gt;）、<span class="help-kbd">Shift+Enter</span>で見た目だけの改行（&lt;br&gt;）です。&lt;br&gt;を入れた場所には、編集中だけ薄く「↵ 改行」の印が表示されます（保存したHTMLには表示されません）。</p>
+            </div>
+            <div class="bg-yellow-50 border border-yellow-200 rounded p-3 text-xs text-gray-600">
+                <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+                モードを切り替えると編集内容が自動的に反映されます。大きく直したいときは、こまめに「ファイル保存」しておくと、うっかり閉じてしまっても復元できます。
+            </div>
+        </div>
+        <div class="flex justify-end mt-5 pt-3 border-t">
+            <button onclick="closeHelpModal()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold transition">閉じる</button>
         </div>
     </div>
 </div>
@@ -232,7 +314,6 @@ const baseFontSizeInput = document.getElementById('base-font-size');
 const webIframe = document.getElementById('web-iframe');
 const previewHint = document.getElementById('preview-hint');
 const addRubyBtn = document.getElementById('add-ruby-btn');
-const textEditHintArea = document.getElementById('text-edit-hint-area');
 
 let currentTargetRuby = null, lastRange = null;
 let currentMode = 'web';
@@ -240,11 +321,71 @@ let editorCursorPos = null, previewInsertRange = null;
 let aspectLocked = false, aspectRatio = null, changingFrom = null;
 let addRubyRange = null;
 let addRubyBtnVisible = false;
+let lastKanjiJumpIndex = -1;
+
+// ===================== Undo（元に戻す）管理 =====================
+// textarea標準のUndoはinnerHTML経由の書き換えでは効かないため、
+// エディタ内容の変更を独自スタックで記録し、Ctrl+Zで復元できるようにする。
+const undoStack = [];
+const redoStack = [];
+const UNDO_LIMIT = 50;
+let undoTimer = null;
+let isRestoringUndo = false;
+
+function pushUndoState(immediate) {
+    if (isRestoringUndo) return;
+    const doPush = () => {
+        const cur = editor.value;
+        if (undoStack.length > 0 && undoStack[undoStack.length - 1] === cur) return;
+        undoStack.push(cur);
+        if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+        redoStack.length = 0;
+    };
+    if (immediate) { doPush(); return; }
+    if (undoTimer) clearTimeout(undoTimer);
+    undoTimer = setTimeout(doPush, 400);
+}
+
+function performUndo() {
+    if (undoStack.length === 0) return;
+    isRestoringUndo = true;
+    redoStack.push(editor.value);
+    const prev = undoStack.pop();
+    editor.value = prev;
+    isRestoringUndo = false;
+    if (currentMode === 'text') { preview.innerHTML = editor.value; preview.contentEditable = 'true'; }
+    else updatePreview();
+}
+function performRedo() {
+    if (redoStack.length === 0) return;
+    isRestoringUndo = true;
+    undoStack.push(editor.value);
+    const next = redoStack.pop();
+    editor.value = next;
+    isRestoringUndo = false;
+    if (currentMode === 'text') { preview.innerHTML = editor.value; preview.contentEditable = 'true'; }
+    else updatePreview();
+}
+document.addEventListener('keydown', (e) => {
+    const isMod = e.ctrlKey || e.metaKey;
+    if (!isMod) return;
+    if (e.key === 'z' || e.key === 'Z') {
+        // textarea自身にフォーカスがある時は、textareaのネイティブUndoに任せる
+        if (document.activeElement === editor) return;
+        e.preventDefault();
+        if (e.shiftKey) performRedo(); else performUndo();
+    } else if (e.key === 'y' || e.key === 'Y') {
+        if (document.activeElement === editor) return;
+        e.preventDefault();
+        performRedo();
+    }
+});
 
 try { document.execCommand('defaultParagraphSeparator', false, 'div'); } catch(e) {}
 
 editor.addEventListener('click', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
 editor.addEventListener('keyup', () => { editorCursorPos = editor.selectionStart; previewInsertRange = null; });
+editor.addEventListener('input', () => { pushUndoState(false); });
 
 preview.addEventListener('mouseup', () => {
     const sel = window.getSelection();
@@ -260,7 +401,25 @@ window.addEventListener('DOMContentLoaded', () => {
     preview.classList.add('hidden');
     webIframe.classList.remove('hidden');
     updateWebIframe();
+    maybeShowHelpOnFirstVisit();
 });
+
+// ===================== 使い方モーダル =====================
+function openHelpModal() {
+    const m = document.getElementById('help-modal');
+    m.classList.remove('hidden'); m.classList.add('flex');
+}
+function closeHelpModal() {
+    const m = document.getElementById('help-modal');
+    m.classList.add('hidden'); m.classList.remove('flex');
+    try { localStorage.setItem('rubyfurio2_help_seen', '1'); } catch(e) {}
+}
+function maybeShowHelpOnFirstVisit() {
+    try {
+        if (!localStorage.getItem('rubyfurio2_help_seen')) openHelpModal();
+    } catch(e) {}
+}
+document.getElementById('help-modal').addEventListener('click', e => { if (e.target === document.getElementById('help-modal')) closeHelpModal(); });
 
 // ===================== HTMLファイルを開く =====================
 function openHtmlFile(event) {
@@ -272,6 +431,8 @@ function openHtmlFile(event) {
         // <body>〜</body> の中身があればそこだけ抽出、なければ全文をそのまま使う
         const bodyMatch = text.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
         editor.value = bodyMatch ? bodyMatch[1].trim() : text;
+        // 新しいファイルを読み込んだので、それ以前のUndo履歴は無効にする
+        undoStack.length = 0; redoStack.length = 0;
         // モードをWEBプレビューに戻してプレビュー更新
         setMode('web');
         updatePreview();
@@ -294,12 +455,13 @@ function setMode(mode) {
     document.getElementById('btn-mode-text').classList.toggle('active', mode === 'text');
     hideAddRubyBtn();
 
-    if (mode === 'text') {
-        textEditHintArea.classList.remove('hidden');
-        textEditHintArea.classList.add('flex');
+    const rubyJumpArea = document.getElementById('ruby-jump-area');
+    if (mode === 'ruby') {
+        rubyJumpArea.classList.remove('hidden');
+        rubyJumpArea.classList.add('flex');
     } else {
-        textEditHintArea.classList.add('hidden');
-        textEditHintArea.classList.remove('flex');
+        rubyJumpArea.classList.add('hidden');
+        rubyJumpArea.classList.remove('flex');
     }
 
     if (mode === 'web') {
@@ -363,18 +525,27 @@ preview.addEventListener('keydown', (e) => {
 
 // ===================== テキスト編集→エディタ同期 =====================
 function syncTextModeToEditor() {
+    pushUndoState(true);
     const c = preview.cloneNode(true);
     c.querySelectorAll('.cross-highlight').forEach(el => {
         const p = el.parentNode;
         while (el.firstChild) p.insertBefore(el.firstChild, el);
         p.removeChild(el);
     });
+    c.querySelectorAll('.kanji-jump-target').forEach(el => el.classList.remove('kanji-jump-target'));
     c.removeAttribute('contenteditable');
     c.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    // ルート要素にだけ付与されたツール内部用クラスを、値を保持したまま個別に取り除く
+    // （旧実装は class="" / style="" の文字列置換のみで、値ありの属性を誤って壊す余地があったため
+    //  DOM APIのclassList.removeで安全に処理する）
     ['text-edit-mode', 'ruby-edit-mode', 'preview-content', 'page-hp'].forEach(cls => { c.classList.remove(cls); });
-    editor.value = c.innerHTML
-        .replace(/ class=""/g, '')
-        .replace(/ style=""/g, '');
+    let html = c.innerHTML;
+    // ルート要素側で class/style が結果的に空文字になった場合のみ属性ごと除去
+    html = html.replace(/^(<[a-zA-Z0-9]+)([^>]*)>/, (m, tag, attrs) => {
+        attrs = attrs.replace(/\s(class|style)=""/g, '');
+        return tag + attrs + '>';
+    });
+    editor.value = html;
 }
 
 // ===================== ルビ追加ボタン =====================
@@ -438,6 +609,12 @@ function addRubyToSelection() {
 function closeAddRubyModal() {
     document.getElementById('add-ruby-modal').classList.add('hidden');
     document.getElementById('add-ruby-modal').classList.remove('flex');
+    // ジャンプ機能でハイライトしたspanが未確定のまま残っていれば解除する
+    preview.querySelectorAll('.kanji-jump-target').forEach(el => {
+        const p = el.parentNode;
+        while (el.firstChild) p.insertBefore(el.firstChild, el);
+        p.removeChild(el);
+    });
     addRubyRange = null;
     addRubyBtnVisible = false;
 }
@@ -454,6 +631,17 @@ function confirmAddRuby() {
     rubyEl.appendChild(rtEl);
     addRubyRange.deleteContents();
     addRubyRange.insertNode(rubyEl);
+    // ジャンプ機能で挿入した一時ハイライト用spanが中身空で残った場合は取り除く
+    preview.querySelectorAll('.kanji-jump-target').forEach(el => {
+        if (el.textContent.trim() === '' && !el.querySelector('ruby')) {
+            el.remove();
+        } else {
+            // spanの中にrubyだけが残った形なら、spanを解除してrubyだけにする
+            const p = el.parentNode;
+            while (el.firstChild) p.insertBefore(el.firstChild, el);
+            p.removeChild(el);
+        }
+    });
     syncPreviewToEditor();
     attachRubyClickEvents();
     closeAddRubyModal();
@@ -689,6 +877,7 @@ function insertImage() {
         previewInsertRange=null;
         syncPreviewToEditor();
     } else {
+        pushUndoState(true);
         const p=(editorCursorPos!==null)?editorCursorPos:editor.value.length;
         editor.value=editor.value.substring(0,p)+tag+editor.value.substring(p);
         editorCursorPos=p+tag.length;
@@ -754,6 +943,7 @@ function applyStyleToPreview(s, e2, range) {
     }
 }
 function insertTagToEditor(s, e2) {
+    pushUndoState(true);
     const st = editor.selectionStart, en = editor.selectionEnd, t = editor.value;
     editor.value = t.substring(0, st) + s + t.substring(st, en) + e2 + t.substring(en);
     editor.focus(); editor.selectionStart = st + s.length; editor.selectionEnd = en + s.length; updatePreview();
@@ -785,14 +975,102 @@ function removeRubyTag() { if (!currentTargetRuby) return; let k = ''; currentTa
 
 // ===================== 同期（ルビ編集用） =====================
 function syncPreviewToEditor() {
+    pushUndoState(false);
     const c = preview.cloneNode(true);
     c.querySelectorAll('.cross-highlight').forEach(el => { const p = el.parentNode; while (el.firstChild) p.insertBefore(el.firstChild, el); p.removeChild(el); });
+    c.querySelectorAll('.kanji-jump-target').forEach(el => el.classList.remove('kanji-jump-target'));
     c.querySelectorAll('table br').forEach(br => br.replaceWith(document.createTextNode('\x00TDBR\x00')));
     c.querySelectorAll('br').forEach(br => br.replaceWith(document.createTextNode('\n')));
     editor.value = c.innerHTML.replace(/\x00TDBR\x00/g, '<br>');
 }
 
 function copyHtml() { navigator.clipboard.writeText(editor.value).then(() => alert('コピーしました')); }
+
+// ===================== ファイル保存（ダウンロード） =====================
+// claude.aiのアーティファクト環境ではwindow.print()やwindow.open()での直接印刷が
+// サンドボックスでブロックされるため、Blob URL + <a download> でHTMLファイルとして
+// ダウンロードし、ブラウザで開いてから印刷・保存する方式を採る。
+function downloadHtml() {
+    const sz = parseInt(baseFontSizeInput.value) || 12;
+    const h = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>ルビふりお2</title><style>body{font-family:"BIZ UDPGothic","BIZ UDGothic","Hiragino Kaku Gothic ProN","Hiragino Sans","Meiryo","Yu Gothic",sans-serif;font-size:${sz}pt;line-height:2.0;padding:2rem;margin:0;overflow-wrap:break-word;background:white;}table{border-collapse:collapse;margin:0.5em 0;}th,td{border:1px solid #999;padding:4px 8px;}th{background:#f3f4f6;font-weight:bold;}ruby{display:inline-ruby;}rt{font-size:0.5em;line-height:1;color:#555;text-align:center;}img{max-width:100%;display:inline-block;vertical-align:middle;}@media print{#print-btn{display:none;}}</style></head><body><button id="print-btn" onclick="window.print()" style="position:fixed;top:10px;right:10px;z-index:999;padding:8px 16px;background:#3b82f6;color:white;border:none;border-radius:6px;font-size:14px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);">印刷</button>${editor.value}</body></html>`;
+    const blob = new Blob([h], {type: 'text/html;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const ts = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const fname = `rubyfurio_${ts.getFullYear()}${pad(ts.getMonth()+1)}${pad(ts.getDate())}_${pad(ts.getHours())}${pad(ts.getMinutes())}.html`;
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+}
+
+// ===================== 未ルビ漢字へジャンプ =====================
+// 文章中の漢字のうち、<ruby>タグでまだふりがなが振られていないものを検索し、
+// 見つけた箇所をハイライトしてスクロール表示する。ボタンを押すたびに次の候補へ進む。
+const KANJI_REGEX = /[\u4E00-\u9FFF\u3400-\u4DBF]/;
+
+function jumpToNextUnrubiedKanji() {
+    if (currentMode !== 'ruby') return;
+    // 前回のハイライトを消す
+    preview.querySelectorAll('.kanji-jump-target').forEach(el => el.classList.remove('kanji-jump-target'));
+
+    const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+            if (!node.parentNode) return NodeFilter.FILTER_REJECT;
+            // rt（ふりがな自体）やruby内の直接テキストは対象外
+            let p = node.parentNode;
+            while (p && p !== preview) {
+                if (p.nodeName === 'RT' || p.nodeName === 'RUBY') return NodeFilter.FILTER_REJECT;
+                p = p.parentNode;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        }
+    }, false);
+
+    const candidates = [];
+    let n;
+    while (n = walker.nextNode()) {
+        const text = n.textContent;
+        for (let i = 0; i < text.length; i++) {
+            if (KANJI_REGEX.test(text[i])) { candidates.push({ node: n, index: i }); }
+        }
+    }
+
+    if (candidates.length === 0) {
+        alert('ルビ未設定の漢字は見つかりませんでした。');
+        lastKanjiJumpIndex = -1;
+        return;
+    }
+
+    lastKanjiJumpIndex = (lastKanjiJumpIndex + 1) % candidates.length;
+    // 同じテキストノード内の連続する漢字はまとめて1候補として扱う
+    const target = candidates[lastKanjiJumpIndex];
+    let startIdx = target.index, endIdx = target.index + 1;
+    const text = target.node.textContent;
+    while (endIdx < text.length && KANJI_REGEX.test(text[endIdx])) endIdx++;
+
+    const range = document.createRange();
+    range.setStart(target.node, startIdx);
+    range.setEnd(target.node, endIdx);
+
+    const span = document.createElement('span');
+    span.className = 'kanji-jump-target';
+    try {
+        const contents = range.extractContents();
+        span.appendChild(contents);
+        range.insertNode(span);
+    } catch (e) { return; }
+
+    span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // クリックでそのままルビ追加ボタンを出せるよう、選択状態にしておく
+    const sel = window.getSelection();
+    const selRange = document.createRange();
+    selRange.selectNodeContents(span);
+    sel.removeAllRanges();
+    sel.addRange(selRange);
+    showAddRubyBtn(selRange);
+}
 
 modal.addEventListener('click', e => { if (e.target === modal) closeRubyModal(); });
 document.getElementById('img-modal').addEventListener('click', e => { if (e.target === document.getElementById('img-modal')) closeImgModal(); });
